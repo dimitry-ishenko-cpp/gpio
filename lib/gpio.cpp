@@ -19,11 +19,11 @@ void chip_deleter::operator()(gpio::chip* chip)
     if(handle)
     {
         auto delete_chip = reinterpret_cast<decltype (::delete_chip)*>(
-            dlsym(handle, "delete_chip")
+            ::dlsym(handle, "delete_chip")
         );
         if(delete_chip) delete_chip(chip);
 
-        dlclose(handle);
+        ::dlclose(handle);
         handle = nullptr;
     }
 }
@@ -40,14 +40,14 @@ unique_chip create_chip(std::string type)
     }
     auto lib = "libgpio-" + type + ".so";
 
-    auto handle = dlopen(lib.data(), RTLD_LAZY);
-    if(!handle) throw std::invalid_argument(dlerror());
+    auto handle = ::dlopen(lib.data(), RTLD_LAZY);
+    if(!handle) throw std::invalid_argument(::dlerror());
 
-    dlerror();
+    ::dlerror();
     auto create_chip = reinterpret_cast<decltype (::create_chip)*>(
-        dlsym(handle, "create_chip")
+        ::dlsym(handle, "create_chip")
     );
-    if(!create_chip) throw std::invalid_argument(dlerror());
+    if(!create_chip) throw std::invalid_argument(::dlerror());
 
     auto chip = unique_chip(create_chip(param.data()), { handle });
     if(!chip) throw std::invalid_argument(
