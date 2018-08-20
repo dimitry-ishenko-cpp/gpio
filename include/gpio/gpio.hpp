@@ -30,7 +30,7 @@ struct chip_deleter
 };
 using unique_chip = std::unique_ptr<chip, chip_deleter>;
 
-unique_chip create_chip(std::string type);
+unique_chip get_chip(std::string type);
 
 ////////////////////////////////////////////////////////////////////////////////
 }

@@ -29,7 +29,7 @@ void chip_deleter::operator()(gpio::chip* chip)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-unique_chip create_chip(std::string type)
+unique_chip get_chip(std::string type)
 {
     std::string param;
     auto pos = type.find(':');
