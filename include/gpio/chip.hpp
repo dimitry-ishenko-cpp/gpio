@@ -28,6 +28,8 @@ struct chip
     ////////////////////
     auto const& type() const noexcept { return type_; }
     auto const& id() const noexcept { return id_; }
+    auto type_id() const { return type_ + (id_.size() ? ":" + id_ : ""); }
+
     auto const& name() const noexcept { return name_; }
 
     ////////////////////
@@ -53,7 +55,6 @@ protected:
 
     ////////////////////
     chip(std::string type) noexcept : type_(std::move(type)) { }
-    auto type_id() const { return type() + ":" + id(); }
 
     void throw_range(gpio::pos n) const
     {
