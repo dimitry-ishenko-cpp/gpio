@@ -62,6 +62,9 @@ inline constexpr flag operator|(flag f1, flag f2) noexcept
 inline constexpr flag operator&(flag f1, flag f2) noexcept
 { return static_cast<flag>(static_cast<int>(f1) & static_cast<int>(f2)); }
 
+inline constexpr flag operator~(flag f) noexcept
+{ return static_cast<flag>(~static_cast<int>(f)); }
+
 ////////////////////////////////////////////////////////////////////////////////
 using value = int;
 
