@@ -72,16 +72,16 @@ protected:
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-void pin::mode(gpio::mode mode, gpio::flag flags, gpio::value)
+inline void pin::mode(gpio::mode mode, gpio::flag flags, gpio::value)
 { mode_ = mode; flags_ = flags; }
 
-void pin::mode(gpio::mode mode, gpio::flag flags)
+inline void pin::mode(gpio::mode mode, gpio::flag flags)
 { this->mode(mode, flags, 0); }
 
-void pin::mode(gpio::mode mode, gpio::value value)
+inline void pin::mode(gpio::mode mode, gpio::value value)
 { this->mode(mode, static_cast<gpio::flag>(0), value); }
 
-void pin::mode(gpio::mode mode)
+inline void pin::mode(gpio::mode mode)
 { this->mode(mode, static_cast<gpio::flag>(0)); }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -97,13 +97,13 @@ inline auto find(const Cont& cont, const T& value)
 
 }
 
-bool pin::digital() const noexcept { return find(gpio::digital_modes, mode_); }
-bool pin::analog() const noexcept { return find(gpio::analog_modes, mode_); }
+inline bool pin::digital() const noexcept { return find(gpio::digital_modes, mode_); }
+inline bool pin::analog() const noexcept { return find(gpio::analog_modes, mode_); }
 
-bool pin::input() const noexcept { return find(gpio::input_modes, mode_); }
-bool pin::output() const noexcept { return find(gpio::output_modes, mode_); }
+inline bool pin::input() const noexcept { return find(gpio::input_modes, mode_); }
+inline bool pin::output() const noexcept { return find(gpio::output_modes, mode_); }
 
-bool pin::supports(gpio::mode mode) const noexcept { return find(modes_, mode); }
+inline bool pin::supports(gpio::mode mode) const noexcept { return find(modes_, mode); }
 
 ////////////////////////////////////////////////////////////////////////////////
 }
