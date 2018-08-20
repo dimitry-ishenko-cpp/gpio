@@ -21,8 +21,8 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-gpiod_pin::gpiod_pin(posix::resource chip, gpio::pos pos) :
-    pin("gpiod_pin", pos), chip_(std::move(chip))
+gpiod_pin::gpiod_pin(std::string type, gpio::pos pos, posix::resource chip) :
+    pin(std::move(type), pos), chip_(std::move(chip))
 {
     update();
 }

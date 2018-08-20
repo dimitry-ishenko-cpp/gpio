@@ -21,7 +21,7 @@ class gpiod_pin : public pin
 {
 public:
     ////////////////////
-    gpiod_pin(posix::resource chip, gpio::pos);
+    gpiod_pin(std::string type, gpio::pos, posix::resource chip);
     virtual ~gpiod_pin() override;
 
     ////////////////////

@@ -22,7 +22,7 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-gpiod_chip::gpiod_chip(std::string param) : chip("gpiod_chip")
+gpiod_chip::gpiod_chip(std::string param) : chip("gpiod")
 {
     constexpr auto npos = std::string::npos;
 
@@ -49,7 +49,7 @@ gpiod_chip::gpiod_chip(std::string param) : chip("gpiod_chip")
     name_ = info.label;
 
     for(gpio::pos n = 0; n < info.lines; ++n)
-        pins_.emplace_back(new gpiod_pin(res_, n));
+        pins_.emplace_back(new gpiod_pin(type_id(), n, res_));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
