@@ -9,7 +9,10 @@
 #define GPIO_PIN_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
-
+#include <gpio_types.hpp>
+#include <algorithm>
+#include <set>
+#include <string>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -18,7 +21,86 @@ namespace gpio
 ////////////////////////////////////////////////////////////////////////////////
 struct pin
 {
+    ////////////////////
+    virtual ~pin() { }
+
+    ////////////////////
+    auto pos() const noexcept { return pos_; }
+    auto const& name() const noexcept { return name_; }
+
+    ////////////////////
+    auto mode() const noexcept { return mode_; }
+    virtual void mode(gpio::mode, gpio::flag flags, gpio::value);
+    virtual void mode(gpio::mode, gpio::flag flags);
+    virtual void mode(gpio::mode, gpio::value);
+    virtual void mode(gpio::mode);
+
+    bool digital() const noexcept;
+    bool analog() const noexcept;
+
+    bool input() const noexcept;
+    bool output() const noexcept;
+
+    auto const& modes() const noexcept { return modes_; }
+    bool supports(gpio::mode) const noexcept;
+
+    bool is(gpio::flag flag) const noexcept { return flags_ & flag; }
+
+    bool used() const noexcept { return used_; }
+
+    ////////////////////
+    virtual void value(int) = 0;
+    virtual int value() = 0;
+
+protected:
+    ////////////////////
+    gpio::pos pos_;
+    std::string name_;
+
+    std::set<gpio::mode> modes_;
+
+    gpio::mode mode_ = gpio::detached;
+    gpio::flag flags_ = static_cast<gpio::flag>(0);
+
+    bool used_ = false;
+
+    ////////////////////
+    pin(gpio::pos n) noexcept : pos_(n) { }
 };
+
+////////////////////////////////////////////////////////////////////////////////
+void pin::mode(gpio::mode mode, gpio::flag flags, gpio::value)
+{ mode_ = mode; flags_ = flags; }
+
+void pin::mode(gpio::mode mode, gpio::flag flags)
+{ this->mode(mode, flags, 0); }
+
+void pin::mode(gpio::mode mode, gpio::value value)
+{ this->mode(mode, static_cast<gpio::flag>(0), value); }
+
+void pin::mode(gpio::mode mode)
+{ this->mode(mode, static_cast<gpio::flag>(0)); }
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+
+template<typename Cont, typename T>
+inline auto find(const Cont& cont, const T& value)
+{
+    using std::begin; using std::end;
+    return std::count(begin(cont), end(cont), value);
+}
+
+}
+
+bool pin::digital() const noexcept { return find(gpio::digital_modes, mode_); }
+bool pin::analog() const noexcept { return find(gpio::analog_modes, mode_); }
+
+bool pin::input() const noexcept { return find(gpio::input_modes, mode_); }
+bool pin::output() const noexcept { return find(gpio::output_modes, mode_); }
+
+bool pin::supports(gpio::mode mode) const noexcept { return find(modes_, mode); }
 
 ////////////////////////////////////////////////////////////////////////////////
 }
