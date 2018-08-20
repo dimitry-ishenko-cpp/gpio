@@ -51,7 +51,7 @@ protected:
     std::vector<pin_ptr> pins_;
 
     ////////////////////
-    chip(std::string id) : id_(std::move(id)) { }
+    chip() noexcept = default;
 
     void throw_range(gpio::pos n) const
     {

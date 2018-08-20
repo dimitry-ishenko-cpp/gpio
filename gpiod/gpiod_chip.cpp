@@ -13,17 +13,19 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-gpiod_chip::gpiod_chip(const char* param) : chip(param)
+gpiod_chip::gpiod_chip(std::string param)
 {
     constexpr auto npos = std::string::npos;
 
     // discard any extra parameters
-    auto pos = id_.find(':');
-    if(pos != npos) id_.erase(pos);
+    auto pos = param.find(':');
+    if(pos != npos) param.erase(pos);
 
-    if(id_.find_first_not_of("0123456789") != npos
-    || id_.size() < 1 || id_.size() > 3)
-    throw std::invalid_argument("Missing or invalid gpiod chip id " + id_);
+    if(param.find_first_not_of("0123456789") != npos
+    || param.size() < 1 || param.size() > 3)
+    throw std::invalid_argument("Missing or invalid gpiod chip id " + param);
+
+    id_ = std::move(param);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
