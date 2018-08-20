@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(gpio)
+project(gpio VERSION 1.0)
 
 set(CMAKE_BUILD_TYPE Release)
 
@@ -8,7 +8,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 include_directories(include)
-add_library(gpio STATIC lib/gpio.cpp)
+
+set(HEADERS
+    include/gpio/gpio.hpp
+    include/gpio/chip.hpp
+    include/gpio/pin.hpp
+    include/gpio/types.hpp
+)
+set(SOURCES lib/gpio.cpp)
+
+add_library(gpio STATIC ${HEADERS} ${SOURCES})
 
 install(TARGETS gpio DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
