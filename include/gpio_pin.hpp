@@ -35,6 +35,9 @@ struct pin
     virtual void mode(gpio::mode, gpio::value);
     virtual void mode(gpio::mode);
 
+    virtual void detach() = 0;
+    virtual bool detached() const noexcept = 0;
+
     bool digital() const noexcept;
     bool analog() const noexcept;
 
