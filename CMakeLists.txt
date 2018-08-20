@@ -13,6 +13,7 @@ add_library(gpio STATIC lib/gpio.cpp)
 install(TARGETS gpio DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
 
+########################
 option(BUILD_GPIOD "Build gpiod backend library" ON)
 if(BUILD_GPIOD)
     add_subdirectory(gpiod)
