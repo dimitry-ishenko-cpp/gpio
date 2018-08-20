@@ -6,7 +6,15 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 #include "gpiod_chip.hpp"
+#include "posix/error.hpp"
+
 #include <stdexcept>
+
+#include <fcntl.h>
+#include <linux/gpio.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -26,6 +34,18 @@ gpiod_chip::gpiod_chip(std::string param)
     throw std::invalid_argument("Missing or invalid gpiod chip id " + param);
 
     id_ = std::move(param);
+
+    ////////////////////
+    std::string path = "/dev/gpiochip" + id_;
+    gpiochip_info info = { };
+
+    res_.adopt(::open(path.data(), O_RDWR | O_CLOEXEC));
+    if(!res_) throw posix::errno_error("Error opening chip " + path);
+
+    auto status = ::ioctl(res_, GPIO_GET_CHIPINFO_IOCTL, &info);
+    if(status == -1) throw posix::errno_error("Error getting chip info");
+
+    name_ = info.label;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
