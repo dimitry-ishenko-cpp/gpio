@@ -9,8 +9,8 @@
 #define GPIO_CHIP_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
-#include <gpio/pin.hpp>
-#include <gpio/types.hpp>
+#include <gpio++/pin.hpp>
+#include <gpio++/types.hpp>
 
 #include <memory>
 #include <stdexcept>

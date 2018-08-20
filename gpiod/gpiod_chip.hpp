@@ -9,7 +9,7 @@
 #define GPIO_GPIOD_CHIP_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "gpio/chip.hpp"
+#include "gpio++/chip.hpp"
 #include "posix/resource.hpp"
 #include <string>
 

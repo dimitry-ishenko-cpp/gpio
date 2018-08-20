@@ -5,7 +5,7 @@
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "gpio/gpio.hpp"
+#include "gpio++/gpio.hpp"
 
 #include <stdexcept>
 #include <dlfcn.h>
@@ -38,7 +38,7 @@ unique_chip get_chip(std::string type)
         param = type.substr(pos + 1);
         type.erase(pos);
     }
-    auto lib = "libgpio-" + type + ".so";
+    auto lib = "libgpio++-" + type + ".so";
 
     auto handle = ::dlopen(lib.data(), RTLD_LAZY);
     if(!handle) throw std::invalid_argument(::dlerror());
