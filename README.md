@@ -16,12 +16,29 @@ Chip-specific backends can provide additional functionality supported by the giv
 
 ### Installation
 
-TODO
+Binary (Debian/Ubuntu/etc):
+```console
+$ version=1.0
+$ arch=$(uname -p)
+$ wget https://github.com/dimitry-ishenko/gpioxx/releases/download/v${version}/gpio++_${version}_Linux_${arch}.deb
+$ sudo apt install ./gpio++_${version}_Linux_${arch}.deb
+```
+
+Compile from source:
+```console
+$ version=1.0
+$ wget https://github.com/dimitry-ishenko/gpioxx/releases/download/v${version}/gpio++-${version}-Source.zip
+$ unzip gpio++-${version}-Source.zip
+$ mkdir gpio++-${version}-Source/build
+$ cd gpio++-${version}-Source/build
+$ cmake ..
+$ make
+$ sudo make install
+```
 
 ### Usage
 
 Example:
-
 ```cpp
 #include <gpio++/gpio.hpp>
 #include <iostream>
@@ -50,6 +67,12 @@ catch(std::exception& e)
     std::cerr << e.what() << std::endl;
     return 1;
 }
+```
+
+Compile and run:
+```console
+$ g++ example.cpp -o example -lgpio++ -ldl
+$ ./example gpiod:0
 ```
 
 ## Authors
