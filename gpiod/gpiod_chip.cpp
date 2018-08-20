@@ -21,7 +21,7 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-gpiod_chip::gpiod_chip(std::string param)
+gpiod_chip::gpiod_chip(std::string param) : chip("gpiod_chip")
 {
     constexpr auto npos = std::string::npos;
 
@@ -31,7 +31,7 @@ gpiod_chip::gpiod_chip(std::string param)
 
     if(param.find_first_not_of("0123456789") != npos
     || param.size() < 1 || param.size() > 3)
-    throw std::invalid_argument("Missing or invalid gpiod chip id " + param);
+    throw std::invalid_argument(type_id() + ": Missing or invalid id " + param);
 
     id_ = std::move(param);
 
@@ -40,10 +40,10 @@ gpiod_chip::gpiod_chip(std::string param)
     gpiochip_info info = { };
 
     res_.adopt(::open(path.data(), O_RDWR | O_CLOEXEC));
-    if(!res_) throw posix::errno_error("Error opening chip " + path);
+    if(!res_) throw posix::errno_error(type_id() + ": Error opening file " + path);
 
     auto status = ::ioctl(res_, GPIO_GET_CHIPINFO_IOCTL, &info);
-    if(status == -1) throw posix::errno_error("Error getting chip info");
+    if(status == -1) throw posix::errno_error(type_id() + ": Error getting chip info");
 
     name_ = info.label;
 }

@@ -26,6 +26,7 @@ namespace gpio
 struct chip
 {
     ////////////////////
+    auto const& type() const { return type_; }
     auto const& id() const { return id_; }
     auto const& name() const { return name_; }
 
@@ -45,18 +46,20 @@ struct chip
 
 protected:
     ////////////////////
-    std::string id_, name_;
+    std::string type_, id_, name_;
 
     using pin_ptr = std::unique_ptr<gpio::pin>;
     std::vector<pin_ptr> pins_;
 
     ////////////////////
-    chip() noexcept = default;
+    chip(std::string type) noexcept : type_(std::move(type)) { }
+
+    auto type_id() const { return type() + ":" + id(); }
 
     void throw_range(gpio::pos n) const
     {
         if(n >= pin_count()) throw std::out_of_range(
-            "Invalid pin # " + std::to_string(n)
+            type_id() + ": Invalid pin # " + std::to_string(n)
         );
     }
 };
