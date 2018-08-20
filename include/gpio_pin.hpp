@@ -10,9 +10,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 #include <gpio_types.hpp>
+
 #include <algorithm>
 #include <set>
 #include <string>
+#include <utility>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -25,6 +27,7 @@ struct pin
     virtual ~pin() { }
 
     ////////////////////
+    auto const& type() const noexcept { return type_; }
     auto pos() const noexcept { return pos_; }
     auto const& name() const noexcept { return name_; }
 
@@ -57,6 +60,7 @@ struct pin
 
 protected:
     ////////////////////
+    std::string type_;
     gpio::pos pos_;
     std::string name_;
 
@@ -68,7 +72,8 @@ protected:
     bool used_ = false;
 
     ////////////////////
-    pin(gpio::pos n) noexcept : pos_(n) { }
+    pin(std::string type, gpio::pos n) noexcept : type_(std::move(type)), pos_(n) { }
+    auto type_id() const { return type() + "(" + std::to_string(pos_) + ")"; }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
