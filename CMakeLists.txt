@@ -23,7 +23,19 @@ install(TARGETS gpio++ DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
 
 ########################
-option(BUILD_GPIOD "Build gpiod backend library" ON)
+option(BUILD_GPIOD "Build gpiod backend" ON)
 if(BUILD_GPIOD)
     add_subdirectory(gpiod)
 endif(BUILD_GPIOD)
+
+########################
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+
+set(CPACK_GENERATOR DEB)
+set(CPACK_STRIP_FILES ON)
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Dimitry Ishenko <dimitry (dot) ishenko (at) (gee) mail (dot) com>")
+
+set(CPACK_SOURCE_GENERATOR ZIP)
+set(CPACK_SOURCE_IGNORE_FILES /\.git.*;/build/;\.user$)
+
+include(CPack)
