@@ -6,20 +6,29 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 #include "gpiod_chip.hpp"
+#include <stdexcept>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-gpiod_chip::gpiod_chip(const char* name)
+gpiod_chip::gpiod_chip(const char* param) : chip(param)
 {
-    name_ = name;
+    constexpr auto npos = std::string::npos;
+
+    // discard any extra parameters
+    auto pos = id_.find(':');
+    if(pos != npos) id_.erase(pos);
+
+    if(id_.find_first_not_of("0123456789") != npos
+    || id_.size() < 1 || id_.size() > 3)
+    throw std::invalid_argument("Missing or invalid gpiod chip id " + id_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" gpio::chip* create_chip(const char* name) { return new gpio::gpiod_chip(name); }
+extern "C" gpio::chip* create_chip(const char* param) { return new gpio::gpiod_chip(param); }
 extern "C" void delete_chip(gpio::chip* chip) { if(chip) delete chip; }
