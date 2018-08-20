@@ -6,6 +6,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 #include "gpiod_chip.hpp"
+#include "gpiod_pin.hpp"
 #include "posix/error.hpp"
 
 #include <stdexcept>
@@ -46,6 +47,9 @@ gpiod_chip::gpiod_chip(std::string param) : chip("gpiod_chip")
     if(status == -1) throw posix::errno_error(type_id() + ": Error getting chip info");
 
     name_ = info.label;
+
+    for(gpio::pos n = 0; n < info.lines; ++n)
+        pins_.emplace_back(new gpiod_pin(res_, n));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
