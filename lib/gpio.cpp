@@ -16,36 +16,42 @@ namespace gpio
 
 void chip_deleter::operator()(gpio::chip* chip)
 {
-    auto delete_chip = reinterpret_cast<decltype (::delete_chip)*>(
-        dlsym(handle.get(), "delete_chip")
-    );
-    if(delete_chip) delete_chip(chip);
+    if(handle)
+    {
+        auto delete_chip = reinterpret_cast<decltype (::delete_chip)*>(
+            dlsym(handle, "delete_chip")
+        );
+        if(delete_chip) delete_chip(chip);
+
+        dlclose(handle);
+        handle = nullptr;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-unique_chip create_chip(std::string name)
+unique_chip create_chip(std::string type)
 {
     std::string param;
-    auto pos = name.find(':');
+    auto pos = type.find(':');
     if(pos != std::string::npos)
     {
-        param = name.substr(pos + 1);
-        name.erase(pos);
+        param = type.substr(pos + 1);
+        type.erase(pos);
     }
-    name = "libgpio-" + name + ".so";
+    auto lib = "libgpio-" + type + ".so";
 
-    auto handle = shared_lib(dlopen(name.data(), RTLD_LAZY), dlclose);
+    auto handle = dlopen(lib.data(), RTLD_LAZY);
     if(!handle) throw std::invalid_argument(dlerror());
 
     dlerror();
     auto create_chip = reinterpret_cast<decltype (::create_chip)*>(
-        dlsym(handle.get(), "create_chip")
+        dlsym(handle, "create_chip")
     );
     if(!create_chip) throw std::invalid_argument(dlerror());
 
     auto chip = unique_chip(create_chip(param.data()), { handle });
     if(!chip) throw std::invalid_argument(
-        name + ": create_chip returned nullptr"
+        lib + ": create_chip() returned nullptr"
     );
     return chip;
 }

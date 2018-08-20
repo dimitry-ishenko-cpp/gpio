@@ -20,18 +20,16 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-using shared_lib = std::shared_ptr<void>;
+using handle = void*;
 
-////////////////////////////////////////////////////////////////////////////////
 struct chip_deleter
 {
-    shared_lib handle;
+    gpio::handle handle = nullptr;
     void operator()(chip*);
 };
-
 using unique_chip = std::unique_ptr<chip, chip_deleter>;
 
-unique_chip create_chip(std::string name);
+unique_chip create_chip(std::string type);
 
 ////////////////////////////////////////////////////////////////////////////////
 }
