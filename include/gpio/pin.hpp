@@ -9,7 +9,7 @@
 #define GPIO_PIN_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
-#include <gpio_types.hpp>
+#include <gpio/types.hpp>
 
 #include <algorithm>
 #include <set>

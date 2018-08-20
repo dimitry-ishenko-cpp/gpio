@@ -5,7 +5,7 @@
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "gpio.hpp"
+#include "gpio/gpio.hpp"
 
 #include <stdexcept>
 #include <dlfcn.h>
