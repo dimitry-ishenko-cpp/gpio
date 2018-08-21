@@ -12,7 +12,7 @@ Chip-specific backends can provide additional functionality supported by the giv
 
 * Linux kernel >= 4.8
 * Linux headers >= 4.8
-* CMake >= 3.8
+* CMake >= 3.1
 
 ### Installation
 
