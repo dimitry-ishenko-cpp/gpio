@@ -12,13 +12,13 @@ Chip-specific backends can provide additional functionality supported by the giv
 
 * Linux kernel >= 4.8
 * Linux headers >= 4.8
-* CMake >= 3.8
+* CMake >= 3.1
 
 ### Installation
 
 Binary (Debian/Ubuntu/etc):
 ```console
-$ version=1.0
+$ version=1.1
 $ arch=$(uname -p)
 $ wget https://github.com/dimitry-ishenko/gpioxx/releases/download/v${version}/gpio++_${version}_Linux_${arch}.deb
 $ sudo apt install ./gpio++_${version}_Linux_${arch}.deb
@@ -26,7 +26,7 @@ $ sudo apt install ./gpio++_${version}_Linux_${arch}.deb
 
 Compile from source:
 ```console
-$ version=1.0
+$ version=1.1
 $ wget https://github.com/dimitry-ishenko/gpioxx/releases/download/v${version}/gpio++-${version}-Source.zip
 $ unzip gpio++-${version}-Source.zip
 $ mkdir gpio++-${version}-Source/build
