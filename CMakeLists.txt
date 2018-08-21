@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.8)
-project(gpio++ VERSION 1.0 DESCRIPTION "C++ GPIO Library for Linux")
+cmake_minimum_required(VERSION 3.1)
+project(gpio++ VERSION 1.0)
 
 set(CMAKE_BUILD_TYPE Release)
 
@@ -36,6 +36,7 @@ set(CPACK_STRIP_FILES ON)
 set(CPACK_PACKAGE_FILE_NAME
     ${PROJECT_NAME}_${PROJECT_VERSION}_${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR}
 )
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "C++ GPIO Library for Linux")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Dimitry Ishenko <dimitry (dot) ishenko (at) (gee) mail (dot) com>")
 
 set(CPACK_SOURCE_GENERATOR ZIP)
