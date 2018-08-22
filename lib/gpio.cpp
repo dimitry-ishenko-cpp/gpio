@@ -8,6 +8,7 @@
 #include "gpio++/gpio.hpp"
 
 #include <stdexcept>
+#include <utility>
 #include <dlfcn.h>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -49,7 +50,7 @@ unique_chip get_chip(std::string type)
     );
     if(!create_chip) throw std::invalid_argument(::dlerror());
 
-    auto chip = unique_chip(create_chip(param.data()), { handle });
+    auto chip = unique_chip(create_chip(std::move(param)), { handle });
     if(!chip) throw std::invalid_argument(
         lib + ": create_chip() returned nullptr"
     );

@@ -11,10 +11,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <gpio++/types.hpp>
 
-#include <algorithm>
 #include <set>
 #include <string>
-#include <utility>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -23,93 +21,51 @@ namespace gpio
 ////////////////////////////////////////////////////////////////////////////////
 struct pin
 {
-    ////////////////////
     virtual ~pin() { }
 
     ////////////////////
-    auto const& type() const noexcept { return type_; }
-    auto pos() const noexcept { return pos_; }
-    auto type_id() const { return type_ + ".pin:" + std::to_string(pos_); }
-
-    auto const& name() const noexcept { return name_; }
+    virtual gpio::pos pos() const noexcept = 0;
+    virtual const std::string& name() const noexcept = 0;
 
     ////////////////////
-    auto mode() const noexcept { return mode_; }
-    virtual void mode(gpio::mode, gpio::flag flags, gpio::value);
-    virtual void mode(gpio::mode, gpio::flag flags);
-    virtual void mode(gpio::mode, gpio::value);
-    virtual void mode(gpio::mode);
+    virtual gpio::mode mode() const noexcept = 0;
+    virtual void mode(gpio::mode, gpio::flag flags, gpio::value) = 0;
+    virtual void mode(gpio::mode, gpio::flag flags) = 0;
+    virtual void mode(gpio::mode, gpio::value) = 0;
+    virtual void mode(gpio::mode) = 0 ;
 
     virtual void detach() = 0;
     virtual bool detached() const noexcept = 0;
 
-    bool digital() const noexcept;
-    bool analog() const noexcept;
+    virtual bool digital() const noexcept = 0;
+    virtual bool analog() const noexcept = 0;
 
-    bool input() const noexcept;
-    bool output() const noexcept;
+    virtual bool input() const noexcept = 0;
+    virtual bool output() const noexcept = 0;
 
-    auto const& modes() const noexcept { return modes_; }
-    bool supports(gpio::mode) const noexcept;
+    virtual const std::set<gpio::mode>& modes() const noexcept = 0;
+    virtual bool supports(gpio::mode) const noexcept = 0;
 
-    bool is(gpio::flag flag) const noexcept { return flags_ & flag; }
+    virtual bool is(gpio::flag) const noexcept = 0;
+    virtual bool supports(gpio::flag) const noexcept = 0;
 
-    bool used() const noexcept { return used_; }
-
-    ////////////////////
-    virtual void value(int) = 0;
-    virtual int value() = 0;
-
-protected:
-    ////////////////////
-    std::string type_;
-    gpio::pos pos_;
-    std::string name_;
-
-    std::set<gpio::mode> modes_;
-
-    gpio::mode mode_ = gpio::detached;
-    gpio::flag flags_ = static_cast<gpio::flag>(0);
-
-    bool used_ = false;
+    // pin is in-use eg by the kernel
+    virtual bool used() const noexcept = 0;
 
     ////////////////////
-    pin(std::string type, gpio::pos n) noexcept : type_(std::move(type)), pos_(n) { }
+    virtual void value(gpio::value) = 0;
+    virtual gpio::value value() = 0;
+
+    // pwm
+    virtual void period(gpio::microseconds) = 0;
+    virtual const gpio::microseconds& period() const noexcept = 0;
+
+    virtual void pulse(gpio::microseconds) = 0;
+    virtual void pulse(gpio::percent) = 0;
+
+    virtual const gpio::microseconds& pulse() const noexcept = 0;
+    virtual gpio::percent duty_cycle() const noexcept = 0;
 };
-
-////////////////////////////////////////////////////////////////////////////////
-inline void pin::mode(gpio::mode mode, gpio::flag flags, gpio::value)
-{ mode_ = mode; flags_ = flags; }
-
-inline void pin::mode(gpio::mode mode, gpio::flag flags)
-{ this->mode(mode, flags, 0); }
-
-inline void pin::mode(gpio::mode mode, gpio::value value)
-{ this->mode(mode, static_cast<gpio::flag>(0), value); }
-
-inline void pin::mode(gpio::mode mode)
-{ this->mode(mode, static_cast<gpio::flag>(0)); }
-
-////////////////////////////////////////////////////////////////////////////////
-namespace
-{
-
-template<typename Cont, typename T>
-inline auto find(const Cont& cont, const T& value)
-{
-    using std::begin; using std::end;
-    return std::count(begin(cont), end(cont), value);
-}
-
-}
-
-inline bool pin::digital() const noexcept { return find(gpio::digital_modes, mode_); }
-inline bool pin::analog() const noexcept { return find(gpio::analog_modes, mode_); }
-
-inline bool pin::input() const noexcept { return find(gpio::input_modes, mode_); }
-inline bool pin::output() const noexcept { return find(gpio::output_modes, mode_); }
-
-inline bool pin::supports(gpio::mode mode) const noexcept { return find(modes_, mode); }
 
 ////////////////////////////////////////////////////////////////////////////////
 }
