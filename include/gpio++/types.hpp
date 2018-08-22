@@ -9,6 +9,7 @@
 #define GPIO_TYPES_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
+#include <chrono>
 #include <cstddef>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +67,23 @@ inline constexpr flag operator~(flag f) noexcept
 { return static_cast<flag>(~static_cast<int>(f)); }
 
 ////////////////////////////////////////////////////////////////////////////////
+// pin value
 using value = int;
+
+// pwm period & pulse
+using std::chrono::microseconds;
+
+constexpr inline
+microseconds usec(unsigned x) noexcept { return microseconds(x); }
+
+// duty cycle
+enum class percent : unsigned { };
+
+constexpr inline
+auto pct(unsigned p) noexcept { return static_cast<percent>(p); }
+
+constexpr inline
+auto operator"" _pct(unsigned long long p) noexcept { return static_cast<percent>(p); }
 
 ////////////////////////////////////////////////////////////////////////////////
 }
