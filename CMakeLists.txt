@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(gpio++ VERSION 1.1)
+project(gpio++ VERSION 2.0)
 
 set(CMAKE_BUILD_TYPE Release)
 
