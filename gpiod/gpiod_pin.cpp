@@ -5,92 +5,104 @@
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
 
 ////////////////////////////////////////////////////////////////////////////////
+#include "gpiod_chip.hpp"
 #include "gpiod_pin.hpp"
 #include "posix/error.hpp"
 
 #include <cstring>
-#include <initializer_list>
 #include <stdexcept>
-#include <utility>
 
 #include <linux/gpio.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-gpiod_pin::gpiod_pin(std::string type, gpio::pos pos, posix::resource chip) :
-    pin(std::move(type), pos), chip_(std::move(chip))
+gpiod_pin::gpiod_pin(gpiod_chip* chip, gpio::pos n) :
+    pin_base(chip, n)
 {
+    modes_ = { gpio::digital_in, gpio::digital_out };
+    can_flags_ = { gpio::active_low, gpio::open_drain, gpio::open_source };
+
     update();
 }
 
-////////////////////////////////////////////////////////////////////////////////
 gpiod_pin::~gpiod_pin() { detach(); }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::mode(gpio::mode mode, gpio::flag in, gpio::value value)
+namespace
 {
-    ////////////////////
-    auto add_from = [&](gpio::flag in, std::initializer_list<gpio::flag> valid)
-    {
-        __u32 out = 0;
-        for(auto one: valid)
-            if(in & one)
+
+auto add_from(gpio::flags flags, gpio::flags valid)
+{
+    __u32 fl = 0;
+    for(auto flag: valid)
+        if(flags.count(flag))
+        {
+            switch(flag)
             {
-                switch(one)
-                {
-                case gpio::active_low : out |= GPIOHANDLE_REQUEST_ACTIVE_LOW ; break;
-                case gpio::open_drain : out |= GPIOHANDLE_REQUEST_OPEN_DRAIN ; break;
-                case gpio::open_source: out |= GPIOHANDLE_REQUEST_OPEN_SOURCE; break;
-                default:;
-                }
-                in = in & ~one;
+            case gpio::active_low : fl |= GPIOHANDLE_REQUEST_ACTIVE_LOW ; break;
+            case gpio::open_drain : fl |= GPIOHANDLE_REQUEST_OPEN_DRAIN ; break;
+            case gpio::open_source: fl |= GPIOHANDLE_REQUEST_OPEN_SOURCE; break;
+            default:;
             }
+            flags.erase(flag);
+        }
 
-        if(in) throw std::invalid_argument(
-            type_id() + ": Invalid pin mode flag(s) " + std::to_string(in)
-        );
+    if(flags.size()) throw std::string(
+        "Invalid pin mode flag " + std::to_string(*flags.begin())
+    );
 
-        return out;
-    };
+    return fl;
+};
 
-    ////////////////////
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void gpiod_pin::mode(gpio::mode mode, gpio::flags flags, gpio::value value)
+{
     detach();
 
-    __u32 flags = 0;
-    switch(mode)
+    __u32 fl = 0;
+    try
     {
-    case gpio::digital_in:
-        flags = GPIOHANDLE_REQUEST_INPUT
-            | add_from(in, { gpio::active_low });
-        break;
+        switch(mode)
+        {
+        case gpio::digital_in:
+            fl = GPIOHANDLE_REQUEST_INPUT | add_from(flags, { gpio::active_low });
+            break;
 
-    case gpio::digital_out:
-        flags = GPIOHANDLE_REQUEST_OUTPUT
-            | add_from(in, { gpio::active_low, gpio::open_drain, gpio::open_source });
-        break;
+        case gpio::digital_out:
+            fl = GPIOHANDLE_REQUEST_OUTPUT | add_from(flags,
+                { gpio::active_low, gpio::open_drain, gpio::open_source }
+            );
+            break;
 
-    default:
-        throw std::invalid_argument(
-            type_id() + ": Invalid pin mode " + std::to_string(mode)
-        );
+        default: throw std::string("Invalid pin mode " + std::to_string(mode));
+        }
+    }
+    catch(std::string& msg)
+    {
+        throw std::invalid_argument(type_id() + ": " + msg);
     }
 
     gpiohandle_request req = { };
     req.lineoffsets[0]    = static_cast<__u32>(pos_);
-    req.flags             = flags;
+    req.flags             = fl;
     req.default_values[0] = static_cast<__u8>(!!value);
     std::strcpy(req.consumer_label, type_id().data());
     req.lines = 1;
 
-    auto status = ::ioctl(chip_, GPIO_GET_LINEHANDLE_IOCTL, &req);
+    auto status = ::ioctl(
+        static_cast<gpiod_chip*>(chip_)->fd_, GPIO_GET_LINEHANDLE_IOCTL, &req
+    );
     if(status == -1 || req.fd <= 0) throw posix::errno_error(
         type_id() + ": Error getting pin handle"
     );
-    res_.adopt(req.fd);
+    fd_ = req.fd;
 
     update();
 }
@@ -98,35 +110,37 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flag in, gpio::value value)
 ////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::detach()
 {
-    if(res_)
+    if(fd_ != invalid)
     {
-        res_.close();
+        ::close(fd_);
+        fd_ = invalid;
+
         update();
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::value(int value)
+void gpiod_pin::value(gpio::value value)
 {
     throw_detached();
 
     gpiohandle_data data = { };
     data.values[0] = static_cast<__u8>(!!value);
 
-    auto status = ::ioctl(res_, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
+    auto status = ::ioctl(fd_, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
     if(status == -1) throw posix::errno_error(
         type_id() + ": Error setting pin value " + std::to_string(value)
     );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-int gpiod_pin::value()
+gpio::value gpiod_pin::value()
 {
     throw_detached();
 
     gpiohandle_data data = { };
 
-    auto status = ::ioctl(res_, GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
+    auto status = ::ioctl(fd_, GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
     if(status == -1) throw posix::errno_error(
         type_id() + ": Error getting pin value"
     );
@@ -140,20 +154,20 @@ void gpiod_pin::update()
     gpioline_info info = { };
     info.line_offset = static_cast<__u32>(pos_);
 
-    auto status = ::ioctl(chip_, GPIO_GET_LINEINFO_IOCTL, &info);
+    auto status = ::ioctl(
+        static_cast<gpiod_chip*>(chip_)->fd_, GPIO_GET_LINEINFO_IOCTL, &info
+    );
     if(status == -1) throw posix::errno_error(
         type_id() + ": Error getting pin info"
     );
 
     name_ = info.name;
-    modes_ = { gpio::digital_in, gpio::digital_out };
-
     mode_ = info.flags & GPIOLINE_FLAG_IS_OUT ? gpio::digital_out : gpio::digital_in;
 
-    flags_ = static_cast<gpio::flag>(0);
-    if(info.flags & GPIOLINE_FLAG_ACTIVE_LOW ) flags_ = flags_ | gpio::active_low;
-    if(info.flags & GPIOLINE_FLAG_OPEN_DRAIN ) flags_ = flags_ | gpio::open_drain;
-    if(info.flags & GPIOLINE_FLAG_OPEN_SOURCE) flags_ = flags_ | gpio::open_source;
+    flags_.clear();
+    if(info.flags & GPIOLINE_FLAG_ACTIVE_LOW ) flags_.insert(gpio::active_low);
+    if(info.flags & GPIOLINE_FLAG_OPEN_DRAIN ) flags_.insert(gpio::open_drain);
+    if(info.flags & GPIOLINE_FLAG_OPEN_SOURCE) flags_.insert(gpio::open_source);
 
     used_ = info.flags & GPIOLINE_FLAG_KERNEL;
 }

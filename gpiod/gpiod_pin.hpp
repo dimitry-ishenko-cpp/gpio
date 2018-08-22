@@ -9,34 +9,36 @@
 #define GPIO_GPIOD_PIN_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "gpio++/pin.hpp"
-#include "posix/resource.hpp"
+#include "pin_base.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-class gpiod_pin : public pin
+class gpiod_chip;
+
+////////////////////////////////////////////////////////////////////////////////
+class gpiod_pin : public pin_base
 {
 public:
     ////////////////////
-    gpiod_pin(std::string type, gpio::pos, posix::resource chip);
+    gpiod_pin(gpiod_chip*, gpio::pos);
     virtual ~gpiod_pin() override;
 
     ////////////////////
-    virtual void mode(gpio::mode, gpio::flag flags, gpio::value) override;
-    using pin::mode;
+    virtual void mode(gpio::mode, gpio::flags, gpio::value) override;
 
     virtual void detach() override;
-    virtual bool detached() const noexcept override { return !res_; }
+    virtual bool detached() const noexcept override { return fd_ == invalid; }
 
-    virtual void value(int) override;
-    virtual int value() override;
+    virtual void value(gpio::value) override;
+    virtual gpio::value value() override;
 
 private:
     ////////////////////
-    posix::resource chip_, res_;
+    static constexpr int invalid = -1;
+    int fd_ = invalid;
 
     void update();
     void throw_detached() const;

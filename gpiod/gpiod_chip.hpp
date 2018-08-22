@@ -9,8 +9,7 @@
 #define GPIO_GPIOD_CHIP_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "gpio++/chip.hpp"
-#include "posix/resource.hpp"
+#include "chip_base.hpp"
 #include <string>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -18,15 +17,19 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-class gpiod_chip : public chip
+class gpiod_chip : public chip_base
 {
 public:
     ////////////////////
-    gpiod_chip(std::string param);
+    gpiod_chip(std::string id);
+    virtual ~gpiod_chip() override;
 
 private:
     ////////////////////
-    posix::resource res_;
+    static constexpr int invalid = -1;
+    int fd_ = invalid;
+
+    friend class gpiod_pin;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
