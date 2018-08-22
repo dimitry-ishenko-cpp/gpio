@@ -26,6 +26,9 @@ struct chip_base : public chip
 {
     virtual ~chip_base() override;
 
+    chip_base(const chip_base&) = delete;
+    chip_base& operator=(const chip_base&) = delete;
+
     ////////////////////
     virtual const std::string& type() const noexcept override { return type_; }
     virtual const std::string& id() const noexcept override { return id_; }
