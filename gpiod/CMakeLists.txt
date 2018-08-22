@@ -7,17 +7,16 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-include_directories(.. ../include)
+include_directories(../include ../util)
 
-set(gpiod_HEADERS gpiod_chip.hpp gpiod_pin.hpp)
-set(gpiod_SOURCES gpiod_chip.cpp gpiod_pin.cpp)
+set(HEADERS gpiod_chip.hpp gpiod_pin.hpp)
+set(SOURCES gpiod_chip.cpp gpiod_pin.cpp)
 
-set(posix_HEADERS ../posix/error.hpp ../posix/resource.hpp)
-set(posix_SOURCES ../posix/error.cpp ../posix/resource.cpp)
+add_subdirectory(../util util)
+set_property(TARGET gpio++-util PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 add_library(gpio++-gpiod SHARED
-    ${gpiod_HEADERS} ${gpiod_SOURCES}
-    ${posix_HEADERS} ${posix_SOURCES}
+    ${HEADERS} ${SOURCES} $<TARGET_OBJECTS:gpio++-util>
 )
 
 install(TARGETS gpio++-gpiod DESTINATION lib)
