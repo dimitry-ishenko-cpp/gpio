@@ -1,3 +1,0 @@
-[submodule "posix"]
-	path = posix
-	url = https://github.com/dimitry-ishenko/posix.git
