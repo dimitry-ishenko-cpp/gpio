@@ -12,11 +12,8 @@
 #include <gpio++/pin.hpp>
 #include <gpio++/types.hpp>
 
-#include <memory>
-#include <stdexcept>
+#include <cstddef>
 #include <string>
-#include <utility>
-#include <vector>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -25,50 +22,26 @@ namespace gpio
 ////////////////////////////////////////////////////////////////////////////////
 struct chip
 {
-    ////////////////////
-    auto const& type() const noexcept { return type_; }
-    auto const& id() const noexcept { return id_; }
-    auto type_id() const { return type_ + (id_.size() ? ":" + id_ : ""); }
-
-    auto const& name() const noexcept { return name_; }
+    virtual ~chip() { }
 
     ////////////////////
-    auto pin_count() const noexcept { return pins_.size(); }
+    virtual const std::string& type() const noexcept = 0;
+    virtual const std::string& id() const noexcept = 0;
 
-    gpio::pin& pin(gpio::pos n)
-    {
-        throw_range(n);
-        return *pins_[n];
-    }
-    gpio::pin const& pin(gpio::pos n) const
-    {
-        throw_range(n);
-        return *pins_[n];
-    }
-
-protected:
-    ////////////////////
-    std::string type_, id_, name_;
-
-    using pin_ptr = std::unique_ptr<gpio::pin>;
-    std::vector<pin_ptr> pins_;
+    virtual const std::string& name() const noexcept = 0;
 
     ////////////////////
-    chip(std::string type) noexcept : type_(std::move(type)) { }
+    virtual std::size_t pin_count() const noexcept = 0;
 
-    void throw_range(gpio::pos n) const
-    {
-        if(n >= pin_count()) throw std::out_of_range(
-            type_id() + ": Invalid pin # " + std::to_string(n)
-        );
-    }
+    virtual gpio::pin* pin(gpio::pos) = 0;
+    virtual const gpio::pin* pin(gpio::pos) const = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" gpio::chip* create_chip(const char* param);
+extern "C" gpio::chip* create_chip(std::string param);
 extern "C" void delete_chip(gpio::chip*);
 
 ////////////////////////////////////////////////////////////////////////////////
