@@ -59,10 +59,6 @@ enum flag
     // digital_out
     open_drain,
     open_source,
-
-    // pwm
-    soft_pwm,
-    hard_pwm,
 };
 
 // pin mode flags
