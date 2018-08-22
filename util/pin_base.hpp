@@ -24,6 +24,9 @@ struct pin_base : public pin
 {
     virtual ~pin_base() override;
 
+    pin_base(const pin_base&) = delete;
+    pin_base& operator=(const pin_base&) = delete;
+
     ////////////////////
     virtual gpio::pos pos() const noexcept override { return pos_; }
     virtual const std::string& name() const noexcept override { return name_; }
