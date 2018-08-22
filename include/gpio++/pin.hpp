@@ -29,13 +29,10 @@ struct pin
 
     ////////////////////
     virtual gpio::mode mode() const noexcept = 0;
-    virtual void mode(gpio::mode, gpio::flag flags, gpio::value) = 0;
-    virtual void mode(gpio::mode, gpio::flag flags) = 0;
+    virtual void mode(gpio::mode, gpio::flags, gpio::value) = 0;
+    virtual void mode(gpio::mode, gpio::flags) = 0;
     virtual void mode(gpio::mode, gpio::value) = 0;
     virtual void mode(gpio::mode) = 0 ;
-
-    virtual void detach() = 0;
-    virtual bool detached() const noexcept = 0;
 
     virtual bool digital() const noexcept = 0;
     virtual bool analog() const noexcept = 0;
@@ -43,11 +40,14 @@ struct pin
     virtual bool input() const noexcept = 0;
     virtual bool output() const noexcept = 0;
 
-    virtual const std::set<gpio::mode>& modes() const noexcept = 0;
     virtual bool supports(gpio::mode) const noexcept = 0;
 
     virtual bool is(gpio::flag) const noexcept = 0;
     virtual bool supports(gpio::flag) const noexcept = 0;
+
+    ////////////////////
+    virtual void detach() = 0;
+    virtual bool detached() const noexcept = 0;
 
     // pin is in-use eg by the kernel
     virtual bool used() const noexcept = 0;
@@ -57,14 +57,14 @@ struct pin
     virtual gpio::value value() = 0;
 
     // pwm
-    virtual void period(gpio::microseconds) = 0;
-    virtual const gpio::microseconds& period() const noexcept = 0;
+    virtual void period(gpio::usec) = 0;
+    virtual const gpio::usec& period() const noexcept = 0;
 
-    virtual void pulse(gpio::microseconds) = 0;
-    virtual void pulse(gpio::percent) = 0;
+    virtual void pulse(gpio::usec) = 0;
+    virtual const gpio::usec& pulse() const noexcept = 0;
 
-    virtual const gpio::microseconds& pulse() const noexcept = 0;
-    virtual gpio::percent duty_cycle() const noexcept = 0;
+    virtual void pulse(gpio::pct) = 0;
+    virtual gpio::pct duty_cycle() const noexcept = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

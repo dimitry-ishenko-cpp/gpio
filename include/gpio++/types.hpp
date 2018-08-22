@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <chrono>
 #include <cstddef>
+#include <set>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -35,55 +36,50 @@ enum mode
     pwm,
 };
 
-constexpr mode digital_modes[] = { digital_in, digital_out, pwm };
-constexpr mode analog_modes[] = { analog_in, analog_out };
+// pin modes
+using modes = std::set<mode>;
 
-constexpr mode input_modes[] = { digital_in, analog_in };
-constexpr mode output_modes[] = { digital_out, analog_out, pwm };
+constexpr auto digital_modes = { digital_in, digital_out, pwm };
+constexpr auto analog_modes = { analog_in, analog_out };
+
+constexpr auto input_modes = { digital_in, analog_in };
+constexpr auto output_modes = { digital_out, analog_out, pwm };
 
 ////////////////////////////////////////////////////////////////////////////////
-// pin mode flags
+// pin mode flag
 enum flag
 {
     // digital_in, digital_out
-    active_low = 0x0001,
+    active_low,
 
     // digital_in
-    pull_up = 0x0010,
-    pull_down = 0x0020,
+    pull_up,
+    pull_down,
 
     // digital_out
-    open_drain = 0x0100,
-    open_source = 0x0200
+    open_drain,
+    open_source,
+
+    // pwm
+    soft_pwm,
+    hard_pwm,
 };
 
-inline constexpr flag operator|(flag f1, flag f2) noexcept
-{ return static_cast<flag>(static_cast<int>(f1) | static_cast<int>(f2)); }
-
-inline constexpr flag operator&(flag f1, flag f2) noexcept
-{ return static_cast<flag>(static_cast<int>(f1) & static_cast<int>(f2)); }
-
-inline constexpr flag operator~(flag f) noexcept
-{ return static_cast<flag>(~static_cast<int>(f)); }
+// pin mode flags
+using flags = std::set<flag>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // pin value
 using value = int;
 
 // pwm period & pulse
-using std::chrono::microseconds;
-
-constexpr inline
-microseconds usec(unsigned x) noexcept { return microseconds(x); }
+using usec = std::chrono::microseconds;
 
 // duty cycle
-enum class percent : unsigned { };
+using pct = double;
 
 constexpr inline
-auto pct(unsigned p) noexcept { return static_cast<percent>(p); }
-
-constexpr inline
-auto operator"" _pct(unsigned long long p) noexcept { return static_cast<percent>(p); }
+auto operator"" _pct(long double p) noexcept { return static_cast<pct>(p); }
 
 ////////////////////////////////////////////////////////////////////////////////
 }
