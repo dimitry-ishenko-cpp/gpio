@@ -17,9 +17,6 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-struct chip_base;
-
-////////////////////////////////////////////////////////////////////////////////
 struct pin_base : public pin
 {
     virtual ~pin_base() override;
@@ -28,6 +25,8 @@ struct pin_base : public pin
     pin_base& operator=(const pin_base&) = delete;
 
     ////////////////////
+    virtual const gpio::chip* chip() const noexcept override { return chip_; }
+
     virtual gpio::pos pos() const noexcept override { return pos_; }
     virtual const std::string& name() const noexcept override { return name_; }
 
@@ -78,7 +77,7 @@ struct pin_base : public pin
 
 protected:
     ////////////////////
-    chip_base* chip_ = nullptr;
+    gpio::chip* chip_ = nullptr;
 
     gpio::pos pos_;
     std::string name_;
@@ -94,8 +93,7 @@ protected:
     gpio::usec period_ { 100000 }, pulse_ { 0 };
 
     ////////////////////
-    pin_base(chip_base*, gpio::pos) noexcept;
-    std::string type_id() const;
+    pin_base(gpio::chip*, gpio::pos) noexcept;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
