@@ -8,6 +8,7 @@
 #include "gpiod_chip.hpp"
 #include "gpiod_pin.hpp"
 #include "posix/error.hpp"
+#include "type_id.hpp"
 
 #include <stdexcept>
 #include <utility>
@@ -29,7 +30,7 @@ gpiod_chip::gpiod_chip(std::string id) : chip_base("gpiod")
     if(id.find_first_not_of("0123456789") != std::string::npos
         || id.size() < 1 || id.size() > 3)
     throw std::invalid_argument(
-        type_id() + ": Missing or invalid id " + id
+        type_id(this) + ": Missing or invalid id " + id
     );
 
     id_ = std::move(id);
@@ -40,12 +41,12 @@ gpiod_chip::gpiod_chip(std::string id) : chip_base("gpiod")
 
     fd_ = ::open(path.data(), O_RDWR | O_CLOEXEC);
     if(!fd_) throw posix::errno_error(
-        type_id() + ": Error opening file " + path
+        type_id(this) + ": Error opening file " + path
     );
 
     auto status = ::ioctl(fd_, GPIO_GET_CHIPINFO_IOCTL, &info);
     if(status == -1) throw posix::errno_error(
-        type_id() + ": Error getting chip info"
+        type_id(this) + ": Error getting chip info"
     );
 
     name_ = info.label;

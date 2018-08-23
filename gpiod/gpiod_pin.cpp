@@ -8,6 +8,7 @@
 #include "gpiod_chip.hpp"
 #include "gpiod_pin.hpp"
 #include "posix/error.hpp"
+#include "type_id.hpp"
 
 #include <cstring>
 #include <stdexcept>
@@ -86,21 +87,21 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flags flags, gpio::value value)
     }
     catch(std::string& msg)
     {
-        throw std::invalid_argument(type_id() + ": " + msg);
+        throw std::invalid_argument(type_id(this) + ": " + msg);
     }
 
     gpiohandle_request req = { };
     req.lineoffsets[0]    = static_cast<__u32>(pos_);
     req.flags             = fl;
     req.default_values[0] = static_cast<__u8>(!!value);
-    std::strcpy(req.consumer_label, type_id().data());
+    std::strcpy(req.consumer_label, type_id(this).data());
     req.lines = 1;
 
     auto status = ::ioctl(
         static_cast<gpiod_chip*>(chip_)->fd_, GPIO_GET_LINEHANDLE_IOCTL, &req
     );
     if(status == -1 || req.fd <= 0) throw posix::errno_error(
-        type_id() + ": Error getting pin handle"
+        type_id(this) + ": Error getting pin handle"
     );
     fd_ = req.fd;
 
@@ -129,7 +130,7 @@ void gpiod_pin::value(gpio::value value)
 
     auto status = ::ioctl(fd_, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
     if(status == -1) throw posix::errno_error(
-        type_id() + ": Error setting pin value " + std::to_string(value)
+        type_id(this) + ": Error setting pin value " + std::to_string(value)
     );
 }
 
@@ -142,7 +143,7 @@ gpio::value gpiod_pin::value()
 
     auto status = ::ioctl(fd_, GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
     if(status == -1) throw posix::errno_error(
-        type_id() + ": Error getting pin value"
+        type_id(this) + ": Error getting pin value"
     );
 
     return data.values[0];
@@ -158,7 +159,7 @@ void gpiod_pin::update()
         static_cast<gpiod_chip*>(chip_)->fd_, GPIO_GET_LINEINFO_IOCTL, &info
     );
     if(status == -1) throw posix::errno_error(
-        type_id() + ": Error getting pin info"
+        type_id(this) + ": Error getting pin info"
     );
 
     name_ = info.name;
@@ -176,7 +177,7 @@ void gpiod_pin::update()
 void gpiod_pin::throw_detached() const
 {
     if(detached()) throw std::logic_error(
-        type_id() + ": Using detached instance"
+        type_id(this) + ": Using detached instance"
     );
 }
 
