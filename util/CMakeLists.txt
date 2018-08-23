@@ -9,8 +9,17 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include_directories(../include)
 
-set(HEADERS chip_base.hpp pin_base.hpp posix/error.hpp)
-set(SOURCES chip_base.cpp pin_base.cpp posix/error.cpp)
+set(HEADERS
+    chip_base.hpp
+    pin_base.hpp
+    posix/error.hpp
+    type_id.hpp
+)
+set(SOURCES
+    chip_base.cpp
+    pin_base.cpp
+    posix/error.cpp
+)
 
 add_library(gpio++-util OBJECT ${HEADERS} ${SOURCES})
 
