@@ -6,6 +6,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 #include "chip_base.hpp"
+#include "type_id.hpp"
+
 #include <stdexcept>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,16 +35,10 @@ const gpio::pin* chip_base::pin(gpio::pos n) const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-std::string chip_base::type_id() const
-{
-    return id().size() ? type() + ':' + id() : type();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 void chip_base::throw_range(gpio::pos n) const
 {
     if(n >= pin_count()) throw std::out_of_range(
-        type_id() + ": Invalid pin # " + std::to_string(n)
+        type_id(this) + ": Invalid pin # " + std::to_string(n)
     );
 }
 

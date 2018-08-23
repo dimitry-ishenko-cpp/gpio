@@ -51,11 +51,7 @@ protected:
 
     ////////////////////
     chip_base(std::string type) noexcept;
-
-    std::string type_id() const;
     void throw_range(gpio::pos) const;
-
-    friend class pin_base;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
