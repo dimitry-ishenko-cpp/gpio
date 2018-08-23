@@ -19,11 +19,16 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
+struct chip;
+
+////////////////////////////////////////////////////////////////////////////////
 struct pin
 {
     virtual ~pin() { }
 
     ////////////////////
+    virtual const gpio::chip* chip() const noexcept = 0;
+
     virtual gpio::pos pos() const noexcept = 0;
     virtual const std::string& name() const noexcept = 0;
 
