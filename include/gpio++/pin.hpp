@@ -34,8 +34,8 @@ struct pin
 
     ////////////////////
     virtual gpio::mode mode() const noexcept = 0;
-    virtual void mode(gpio::mode, gpio::flags, gpio::value) = 0;
-    virtual void mode(gpio::mode, gpio::flags) = 0;
+    virtual void mode(gpio::mode, gpio::flag, gpio::value) = 0;
+    virtual void mode(gpio::mode, gpio::flag) = 0;
     virtual void mode(gpio::mode, gpio::value) = 0;
     virtual void mode(gpio::mode) = 0 ;
 

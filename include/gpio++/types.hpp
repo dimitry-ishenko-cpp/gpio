@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <chrono>
 #include <cstddef>
-#include <set>
+#include <initializer_list>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -36,9 +36,6 @@ enum mode
     pwm,
 };
 
-// pin modes
-using modes = std::set<mode>;
-
 constexpr auto digital_modes = { digital_in, digital_out, pwm };
 constexpr auto analog_modes = { analog_in, analog_out };
 
@@ -50,19 +47,33 @@ constexpr auto output_modes = { digital_out, analog_out, pwm };
 enum flag
 {
     // digital_in, digital_out
-    active_low,
+    active_low  = 0x0001,
 
     // digital_in
-    pull_up,
-    pull_down,
+    pull_up     = 0x0010,
+    pull_down   = 0x0020,
 
     // digital_out
-    open_drain,
-    open_source,
+    open_drain  = 0x0100,
+    open_source = 0x0200,
 };
 
-// pin mode flags
-using flags = std::set<flag>;
+inline constexpr
+flag operator|(flag x, flag y) noexcept
+{ return static_cast<flag>(static_cast<int>(x) | static_cast<int>(y)); }
+
+inline constexpr
+flag operator&(flag x, flag y) noexcept
+{ return static_cast<flag>(static_cast<int>(x) & static_cast<int>(y)); }
+
+inline constexpr
+flag& operator|=(flag& x, flag y) noexcept { return x = x | y; }
+
+inline constexpr
+flag& operator&=(flag& x, flag y) noexcept { return x = x & y; }
+
+inline constexpr
+flag operator~(flag x) noexcept { return static_cast<flag>(~static_cast<int>(x)); }
 
 ////////////////////////////////////////////////////////////////////////////////
 // pin value

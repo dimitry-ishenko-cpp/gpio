@@ -11,6 +11,7 @@
 #include "type_id.hpp"
 
 #include <cstring>
+#include <initializer_list>
 #include <stdexcept>
 
 #include <linux/gpio.h>
@@ -26,7 +27,7 @@ gpiod_pin::gpiod_pin(gpiod_chip* chip, gpio::pos n) :
     pin_base(chip, n)
 {
     modes_ = { gpio::digital_in, gpio::digital_out };
-    can_flags_ = { gpio::active_low, gpio::open_drain, gpio::open_source };
+    valid_ = gpio::active_low | gpio::open_drain | gpio::open_source;
 
     update();
 }
@@ -37,11 +38,11 @@ gpiod_pin::~gpiod_pin() { detach(); }
 namespace
 {
 
-auto add_from(gpio::flags flags, gpio::flags valid)
+auto convert(gpio::flag flags, std::initializer_list<gpio::flag> valid)
 {
     __u32 fl = 0;
     for(auto flag: valid)
-        if(flags.count(flag))
+        if(flags & flag)
         {
             switch(flag)
             {
@@ -50,11 +51,11 @@ auto add_from(gpio::flags flags, gpio::flags valid)
             case gpio::open_source: fl |= GPIOHANDLE_REQUEST_OPEN_SOURCE; break;
             default:;
             }
-            flags.erase(flag);
+            flags &= ~flag;
         }
 
-    if(flags.size()) throw std::string(
-        "Invalid pin mode flag " + std::to_string(*flags.begin())
+    if(flags) throw std::string(
+        "Invalid pin mode flag(s) " + std::to_string(flags)
     );
 
     return fl;
@@ -63,7 +64,7 @@ auto add_from(gpio::flags flags, gpio::flags valid)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::mode(gpio::mode mode, gpio::flags flags, gpio::value value)
+void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::value value)
 {
     detach();
 
@@ -73,11 +74,11 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flags flags, gpio::value value)
         switch(mode)
         {
         case gpio::digital_in:
-            fl = GPIOHANDLE_REQUEST_INPUT | add_from(flags, { gpio::active_low });
+            fl = GPIOHANDLE_REQUEST_INPUT | convert(flags, { gpio::active_low });
             break;
 
         case gpio::digital_out:
-            fl = GPIOHANDLE_REQUEST_OUTPUT | add_from(flags,
+            fl = GPIOHANDLE_REQUEST_OUTPUT | convert(flags,
                 { gpio::active_low, gpio::open_drain, gpio::open_source }
             );
             break;
@@ -165,10 +166,10 @@ void gpiod_pin::update()
     name_ = info.name;
     mode_ = info.flags & GPIOLINE_FLAG_IS_OUT ? gpio::digital_out : gpio::digital_in;
 
-    flags_.clear();
-    if(info.flags & GPIOLINE_FLAG_ACTIVE_LOW ) flags_.insert(gpio::active_low);
-    if(info.flags & GPIOLINE_FLAG_OPEN_DRAIN ) flags_.insert(gpio::open_drain);
-    if(info.flags & GPIOLINE_FLAG_OPEN_SOURCE) flags_.insert(gpio::open_source);
+    flags_ = { };
+    if(info.flags & GPIOLINE_FLAG_ACTIVE_LOW ) flags_ |= gpio::active_low;
+    if(info.flags & GPIOLINE_FLAG_OPEN_DRAIN ) flags_ |= gpio::open_drain;
+    if(info.flags & GPIOLINE_FLAG_OPEN_SOURCE) flags_ |= gpio::open_source;
 
     used_ = info.flags & GPIOLINE_FLAG_KERNEL;
 }
