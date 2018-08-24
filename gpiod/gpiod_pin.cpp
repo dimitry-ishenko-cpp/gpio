@@ -162,29 +162,17 @@ gpio::value gpiod_pin::value()
 ////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::period(gpio::nsec period)
 {
-    using namespace std::chrono_literals;
-
-    period = std::max(period, 1ns);
-    auto pulse = std::min(pulse_, period_); // can read w/o lock
-    {
-        std::lock_guard<std::mutex> guard { mutex_ };
-        period_ = period;
-        pulse_ = pulse;
-    }
-    cv_.notify_one();
+    pin_base::period(period);
+    high_ticks_ = pulse_.count();
+    low_ticks_ = (period_ - pulse_).count();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::pulse(gpio::nsec pulse)
 {
-    using namespace std::chrono_literals;
-
-    pulse = std::min(std::max(pulse, 0ns), period_);
-    {
-        std::lock_guard<std::mutex> guard { mutex_ };
-        pulse_ = pulse;
-    }
-    cv_.notify_one();
+    pin_base::pulse(pulse);
+    high_ticks_= pulse.count();
+    low_ticks_ = (period_ - pulse_).count();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -222,39 +210,29 @@ void gpiod_pin::throw_detached() const
 ////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::start_pwm()
 {
-    using unique_lock = std::unique_lock<std::mutex>;
     using std::chrono::system_clock;
     using namespace std::chrono_literals;
 
     stop_ = false;
     thread_ = std::thread([&]
     {
-        unique_lock lock { mutex_, std::defer_lock };
         for(auto tp = system_clock::now();;)
         {
-            // high
+            if(high_ticks_)
             {
-                std::lock_guard<unique_lock> guard { lock };
-                if(pulse_ > 0ns)
-                {
-                    value(true);
-                    tp += pulse_;
-                    cv_.wait_until(lock, tp);
-                    if(stop_) break;
-                }
+                value(true);
+                tp += gpio::nsec(high_ticks_);
+                std::this_thread::sleep_until(tp);
             }
+            if(stop_) break;
 
-            // low
+            if(low_ticks_)
             {
-                std::lock_guard<unique_lock> guard { lock };
-                if(pulse_ < period_)
-                {
-                    value(false);
-                    tp += (period_ - pulse_);
-                    cv_.wait_until(lock, tp);
-                    if(stop_) break;
-                }
+                value(false);
+                tp += gpio::nsec(low_ticks_);
+                std::this_thread::sleep_until(tp);
             }
+            if(stop_) break;
         }
     });
 }
@@ -262,14 +240,11 @@ void gpiod_pin::start_pwm()
 ////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::stop_pwm()
 {
-    if(!thread_.joinable()) return;
+    if(thread_.joinable())
     {
-        std::lock_guard<std::mutex> guard { mutex_ };
         stop_ = true;
+        thread_.join();
     }
-    cv_.notify_one();
-
-    thread_.join();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

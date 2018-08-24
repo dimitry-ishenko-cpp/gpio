@@ -11,8 +11,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "pin_base.hpp"
 
-#include <condition_variable>
-#include <mutex>
+#include <atomic>
 #include <thread>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,10 +51,12 @@ private:
     void throw_detached() const;
 
     ////////////////////
+    using ticks = gpio::nsec::rep;
+    std::atomic<ticks> high_ticks_ { pulse_.count() };
+    std::atomic<ticks> low_ticks_ { period_.count() - high_ticks_ };
+
     std::thread thread_;
-    std::condition_variable cv_;
-    std::mutex mutex_;
-    bool stop_ = false;
+    std::atomic<bool> stop_ { false };
 
     void start_pwm();
     void stop_pwm();
