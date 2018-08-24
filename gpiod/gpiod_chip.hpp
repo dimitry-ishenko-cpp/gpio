@@ -26,9 +26,7 @@ public:
 
 private:
     ////////////////////
-    static constexpr int invalid = -1;
-    int fd_ = invalid;
-
+    int fd_;
     friend class gpiod_pin;
 };
 

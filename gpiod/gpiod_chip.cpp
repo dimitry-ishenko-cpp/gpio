@@ -55,7 +55,11 @@ gpiod_chip::gpiod_chip(std::string id) : chip_base("gpiod")
         pins_.emplace_back(new gpiod_pin(this, n));
 }
 
-gpiod_chip::~gpiod_chip() { if(fd_ != invalid) ::close(fd_); }
+gpiod_chip::~gpiod_chip()
+{
+    pins_.clear();
+    ::close(fd_);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 }
