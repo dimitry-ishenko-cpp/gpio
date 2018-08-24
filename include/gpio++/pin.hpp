@@ -68,7 +68,7 @@ struct pin
     virtual void pulse(gpio::nsec) = 0;
     virtual gpio::nsec pulse() const noexcept = 0;
 
-    virtual void pulse(gpio::percent) = 0;
+    virtual void duty_cycle(gpio::percent) = 0;
     virtual gpio::percent duty_cycle() const noexcept = 0;
 };
 
