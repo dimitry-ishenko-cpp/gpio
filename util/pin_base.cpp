@@ -41,14 +41,14 @@ inline bool pin_base::input() const noexcept { return find(gpio::input_modes, mo
 inline bool pin_base::output() const noexcept { return find(gpio::output_modes, mode_); }
 
 ////////////////////////////////////////////////////////////////////////////////
-void pin_base::pulse(gpio::pct pct)
+void pin_base::pulse(gpio::percent pc)
 {
-    pct = std::max(0.0, std::min(pct, 100.0));
-    pulse(usec(static_cast<usec::rep>(period_.count() * pct / 100.0 + 0.5)));
+    pc = std::max(0.0, std::min(pc, 100.0));
+    pulse(usec(static_cast<usec::rep>(period_.count() * pc / 100.0 + 0.5)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-gpio::pct pin_base::duty_cycle() const noexcept
+gpio::percent pin_base::duty_cycle() const noexcept
 {
     return 100.0 * pulse_.count() / period_.count();
 }

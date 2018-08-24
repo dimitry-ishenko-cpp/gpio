@@ -72,8 +72,8 @@ struct pin_base : public pin
     virtual void pulse(gpio::usec pulse) override { pulse_ = pulse; }
     virtual gpio::usec pulse() const noexcept override { return pulse_; }
 
-    virtual void pulse(gpio::pct) override;
-    virtual gpio::pct duty_cycle() const noexcept override;
+    virtual void pulse(gpio::percent) override;
+    virtual gpio::percent duty_cycle() const noexcept override;
 
 protected:
     ////////////////////
