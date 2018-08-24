@@ -40,8 +40,8 @@ public:
     virtual void value(gpio::value) override;
     virtual gpio::value value() override;
 
-    virtual void period(gpio::usec) override;
-    virtual void pulse(gpio::usec) override;
+    virtual void period(gpio::nsec) override;
+    virtual void pulse(gpio::nsec) override;
 
 private:
     ////////////////////

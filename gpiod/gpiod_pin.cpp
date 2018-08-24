@@ -160,11 +160,11 @@ gpio::value gpiod_pin::value()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::period(gpio::usec period)
+void gpiod_pin::period(gpio::nsec period)
 {
     using namespace std::chrono_literals;
 
-    period = std::max(period, 1us);
+    period = std::max(period, 1ns);
     auto pulse = std::min(pulse_, period_); // can read w/o lock
     {
         std::lock_guard<std::mutex> guard { mutex_ };
@@ -175,11 +175,11 @@ void gpiod_pin::period(gpio::usec period)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::pulse(gpio::usec pulse)
+void gpiod_pin::pulse(gpio::nsec pulse)
 {
     using namespace std::chrono_literals;
 
-    pulse = std::min(std::max(pulse, 0us), period_);
+    pulse = std::min(std::max(pulse, 0ns), period_);
     {
         std::lock_guard<std::mutex> guard { mutex_ };
         pulse_ = pulse;
@@ -235,7 +235,7 @@ void gpiod_pin::start_pwm()
             // high
             {
                 std::lock_guard<unique_lock> guard { lock };
-                if(pulse_ > 0us)
+                if(pulse_ > 0ns)
                 {
                     value(true);
                     tp += pulse_;
