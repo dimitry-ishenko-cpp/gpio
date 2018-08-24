@@ -10,6 +10,7 @@
 #include "posix/error.hpp"
 #include "type_id.hpp"
 
+#include <chrono>
 #include <cstring>
 #include <initializer_list>
 #include <stdexcept>
@@ -26,13 +27,17 @@ namespace gpio
 gpiod_pin::gpiod_pin(gpiod_chip* chip, gpio::pos n) :
     pin_base(chip, n)
 {
-    modes_ = { gpio::digital_in, gpio::digital_out };
+    modes_ = { gpio::digital_in, gpio::digital_out, gpio::pwm };
     valid_ = gpio::active_low | gpio::open_drain | gpio::open_source;
 
     update();
 }
 
 gpiod_pin::~gpiod_pin() { detach(); }
+
+////////////////////////////////////////////////////////////////////////////////
+gpio::mode gpiod_pin::mode() const noexcept
+{ return thread_.joinable() ? gpio::pwm : mode_; }
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace
@@ -78,6 +83,7 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::value value)
             break;
 
         case gpio::digital_out:
+        case gpio::pwm:
             fl = GPIOHANDLE_REQUEST_OUTPUT | convert(flags,
                 { gpio::active_low, gpio::open_drain, gpio::open_source }
             );
@@ -107,6 +113,7 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::value value)
     fd_ = req.fd;
 
     update();
+    if(mode == gpio::pwm) start_pwm();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -114,6 +121,8 @@ void gpiod_pin::detach()
 {
     if(fd_ != invalid)
     {
+        stop_pwm();
+
         ::close(fd_);
         fd_ = invalid;
 
@@ -151,6 +160,34 @@ gpio::value gpiod_pin::value()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void gpiod_pin::period(gpio::usec period)
+{
+    using namespace std::chrono_literals;
+
+    period = std::max(period, 1us);
+    auto pulse = std::min(pulse_, period_); // can read w/o lock
+    {
+        std::lock_guard<std::mutex> guard { mutex_ };
+        period_ = period;
+        pulse_ = pulse;
+    }
+    cv_.notify_one();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void gpiod_pin::pulse(gpio::usec pulse)
+{
+    using namespace std::chrono_literals;
+
+    pulse = std::min(std::max(pulse, 0us), period_);
+    {
+        std::lock_guard<std::mutex> guard { mutex_ };
+        pulse_ = pulse;
+    }
+    cv_.notify_one();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::update()
 {
     gpioline_info info = { };
@@ -180,6 +217,59 @@ void gpiod_pin::throw_detached() const
     if(detached()) throw std::logic_error(
         type_id(this) + ": Using detached instance"
     );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void gpiod_pin::start_pwm()
+{
+    using unique_lock = std::unique_lock<std::mutex>;
+    using std::chrono::system_clock;
+    using namespace std::chrono_literals;
+
+    stop_ = false;
+    thread_ = std::thread([&]
+    {
+        unique_lock lock { mutex_, std::defer_lock };
+        for(auto tp = system_clock::now();;)
+        {
+            // high
+            {
+                std::lock_guard<unique_lock> guard { lock };
+                if(pulse_ > 0us)
+                {
+                    value(true);
+                    tp += pulse_;
+                    cv_.wait_until(lock, tp);
+                    if(stop_) break;
+                }
+            }
+
+            // low
+            {
+                std::lock_guard<unique_lock> guard { lock };
+                if(pulse_ < period_)
+                {
+                    value(false);
+                    tp += (period_ - pulse_);
+                    cv_.wait_until(lock, tp);
+                    if(stop_) break;
+                }
+            }
+        }
+    });
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void gpiod_pin::stop_pwm()
+{
+    if(!thread_.joinable()) return;
+    {
+        std::lock_guard<std::mutex> guard { mutex_ };
+        stop_ = true;
+    }
+    cv_.notify_one();
+
+    thread_.join();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
