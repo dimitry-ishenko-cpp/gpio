@@ -80,7 +80,7 @@ flag operator~(flag x) noexcept { return static_cast<flag>(~static_cast<int>(x))
 using value = int;
 
 // pwm period & pulse
-using usec = std::chrono::microseconds;
+using nsec = std::chrono::nanoseconds;
 
 // duty cycle
 using percent = double;

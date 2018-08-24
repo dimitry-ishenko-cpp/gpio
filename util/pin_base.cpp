@@ -44,7 +44,7 @@ inline bool pin_base::output() const noexcept { return find(gpio::output_modes, 
 void pin_base::pulse(gpio::percent pc)
 {
     pc = std::max(0.0, std::min(pc, 100.0));
-    pulse(usec(static_cast<usec::rep>(period_.count() * pc / 100.0 + 0.5)));
+    pulse(nsec(static_cast<nsec::rep>(period_.count() * pc / 100.0 + 0.5)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

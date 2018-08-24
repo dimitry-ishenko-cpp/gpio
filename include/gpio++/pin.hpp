@@ -62,11 +62,11 @@ struct pin
     virtual gpio::value value() = 0;
 
     // pwm
-    virtual void period(gpio::usec) = 0;
-    virtual gpio::usec period() const noexcept = 0;
+    virtual void period(gpio::nsec) = 0;
+    virtual gpio::nsec period() const noexcept = 0;
 
-    virtual void pulse(gpio::usec) = 0;
-    virtual gpio::usec pulse() const noexcept = 0;
+    virtual void pulse(gpio::nsec) = 0;
+    virtual gpio::nsec pulse() const noexcept = 0;
 
     virtual void pulse(gpio::percent) = 0;
     virtual gpio::percent duty_cycle() const noexcept = 0;
