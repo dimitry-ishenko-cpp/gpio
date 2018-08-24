@@ -11,6 +11,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "pin_base.hpp"
 
+#include <condition_variable>
+#include <mutex>
+#include <thread>
+
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
 {
@@ -27,6 +31,7 @@ public:
     virtual ~gpiod_pin() override;
 
     ////////////////////
+    virtual gpio::mode mode() const noexcept override;
     virtual void mode(gpio::mode, gpio::flag, gpio::value) override;
 
     virtual void detach() override;
@@ -35,6 +40,9 @@ public:
     virtual void value(gpio::value) override;
     virtual gpio::value value() override;
 
+    virtual void period(gpio::usec) override;
+    virtual void pulse(gpio::usec) override;
+
 private:
     ////////////////////
     static constexpr int invalid = -1;
@@ -42,6 +50,15 @@ private:
 
     void update();
     void throw_detached() const;
+
+    ////////////////////
+    std::thread thread_;
+    std::condition_variable cv_;
+    std::mutex mutex_;
+    bool stop_ = false;
+
+    void start_pwm();
+    void stop_pwm();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
