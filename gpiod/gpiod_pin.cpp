@@ -210,13 +210,10 @@ void gpiod_pin::throw_detached() const
 ////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::start_pwm()
 {
-    using std::chrono::system_clock;
-    using namespace std::chrono_literals;
-
     stop_ = false;
     thread_ = std::thread([&]
     {
-        for(auto tp = system_clock::now();;)
+        for(auto tp = std::chrono::high_resolution_clock::now();;)
         {
             if(high_ticks_)
             {
