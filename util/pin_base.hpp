@@ -68,13 +68,13 @@ struct pin_base : public pin
     // virtual gpio::value value() = 0;
 
     // pwm
-    virtual void period(gpio::nsec period) override { period_ = period; }
+    virtual void period(gpio::nsec) override;
     virtual gpio::nsec period() const noexcept override { return period_; }
 
-    virtual void pulse(gpio::nsec pulse) override { pulse_ = pulse; }
+    virtual void pulse(gpio::nsec) override;
     virtual gpio::nsec pulse() const noexcept override { return pulse_; }
 
-    virtual void pulse(gpio::percent) override;
+    virtual void duty_cycle(gpio::percent) override;
     virtual gpio::percent duty_cycle() const noexcept override;
 
 protected:
