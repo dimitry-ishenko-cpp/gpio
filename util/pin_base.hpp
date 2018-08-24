@@ -10,6 +10,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 #include <gpio++/pin.hpp>
+
+#include <set>
 #include <string>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,14 +34,14 @@ struct pin_base : public pin
 
     ////////////////////
     virtual gpio::mode mode() const noexcept override { return mode_; }
-    virtual void mode(gpio::mode mode, gpio::flags flags, gpio::value) override
+    virtual void mode(gpio::mode mode, gpio::flag flags, gpio::value) override
     { mode_ = mode; flags_ = flags; }
-    virtual void mode(gpio::mode mode, gpio::flags flags) override
+    virtual void mode(gpio::mode mode, gpio::flag flags) override
     { this->mode(mode, flags, 0); }
     virtual void mode(gpio::mode mode, gpio::value value) override
-    { this->mode(mode, gpio::flags(), value); }
+    { this->mode(mode, gpio::flag { }, value); }
     virtual void mode(gpio::mode mode) override
-    { this->mode(mode, gpio::flags()); }
+    { this->mode(mode, gpio::flag { }); }
 
     virtual bool digital() const noexcept override;
     virtual bool analog() const noexcept override;
@@ -51,9 +53,9 @@ struct pin_base : public pin
     { return modes_.count(mode); }
 
     virtual bool is(gpio::flag flag) const noexcept override
-    { return flags_.count(flag); }
+    { return flags_ & flag; }
     virtual bool supports(gpio::flag flag) const noexcept override
-    { return can_flags_.count(flag); }
+    { return valid_ & flag; }
 
     ////////////////////
     // virtual void detach() = 0;
@@ -83,10 +85,9 @@ protected:
     std::string name_;
 
     gpio::mode mode_ = gpio::detached;
-    gpio::modes modes_;
+    std::set<gpio::mode> modes_;
 
-    gpio::flags flags_;
-    gpio::flags can_flags_;
+    gpio::flag flags_ { }, valid_ { };
 
     bool used_ = false;
 

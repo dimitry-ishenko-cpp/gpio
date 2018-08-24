@@ -27,7 +27,7 @@ public:
     virtual ~gpiod_pin() override;
 
     ////////////////////
-    virtual void mode(gpio::mode, gpio::flags, gpio::value) override;
+    virtual void mode(gpio::mode, gpio::flag, gpio::value) override;
 
     virtual void detach() override;
     virtual bool detached() const noexcept override { return fd_ == invalid; }
