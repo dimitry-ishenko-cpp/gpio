@@ -36,6 +36,16 @@ $ make
 $ sudo make install
 ```
 
+Clone and compile from repository:
+```console
+$ git clone https://github.com/dimitry-ishenko/gpio.git gpio++
+$ mkdir gpio++/build
+$ cd gpio++/build
+$ cmake .. -DCMAKE_INSTALL_PREFIX=/usr
+$ make
+$ sudo make install
+```
+
 ### Usage
 
 Example:
