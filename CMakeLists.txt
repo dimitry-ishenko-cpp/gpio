@@ -23,6 +23,9 @@ install(TARGETS gpio++ DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
 
 ########################
+add_subdirectory(util)
+set_property(TARGET gpio++-util PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 option(BUILD_GPIOD "Build gpiod backend" ON)
 if(BUILD_GPIOD)
     add_subdirectory(gpiod)

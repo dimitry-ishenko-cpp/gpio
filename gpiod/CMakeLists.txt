@@ -12,9 +12,6 @@ include_directories(../include ../util)
 set(HEADERS gpiod_chip.hpp gpiod_pin.hpp)
 set(SOURCES gpiod_chip.cpp gpiod_pin.cpp)
 
-add_subdirectory(../util util)
-set_property(TARGET gpio++-util PROPERTY POSITION_INDEPENDENT_CODE ON)
-
 add_library(gpio++-gpiod SHARED
     ${HEADERS} ${SOURCES} $<TARGET_OBJECTS:gpio++-util>
 )
