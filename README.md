@@ -18,7 +18,7 @@ Chip-specific backends can provide additional functionality supported by the giv
 
 Binary (Debian/Ubuntu/etc):
 ```console
-$ version=3.0
+$ version=3.1
 $ arch=$(uname -p)
 $ wget https://github.com/dimitry-ishenko/gpio/releases/download/v${version}/gpio++_${version}_Linux_${arch}.deb
 $ sudo apt install ./gpio++_${version}_Linux_${arch}.deb
@@ -26,7 +26,7 @@ $ sudo apt install ./gpio++_${version}_Linux_${arch}.deb
 
 Compile from source:
 ```console
-$ version=3.0
+$ version=3.1
 $ wget https://github.com/dimitry-ishenko/gpio/releases/download/v${version}/gpio++-${version}-Source.zip
 $ unzip gpio++-${version}-Source.zip
 $ mkdir gpio++-${version}-Source/build
