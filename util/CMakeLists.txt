@@ -22,4 +22,3 @@ set(SOURCES
 )
 
 add_library(gpio++-util OBJECT ${HEADERS} ${SOURCES})
-
