@@ -18,7 +18,7 @@ Chip-specific backends can provide additional functionality supported by the giv
 
 Binary (Debian/Ubuntu/etc):
 ```console
-$ version=2.0
+$ version=3.0
 $ arch=$(uname -p)
 $ wget https://github.com/dimitry-ishenko/gpioxx/releases/download/v${version}/gpio++_${version}_Linux_${arch}.deb
 $ sudo apt install ./gpio++_${version}_Linux_${arch}.deb
@@ -26,7 +26,7 @@ $ sudo apt install ./gpio++_${version}_Linux_${arch}.deb
 
 Compile from source:
 ```console
-$ version=2.0
+$ version=3.0
 $ wget https://github.com/dimitry-ishenko/gpioxx/releases/download/v${version}/gpio++-${version}-Source.zip
 $ unzip gpio++-${version}-Source.zip
 $ mkdir gpio++-${version}-Source/build
@@ -41,8 +41,14 @@ $ sudo make install
 Example:
 ```cpp
 #include <gpio++/gpio.hpp>
+
+#include <chrono>
 #include <iostream>
 #include <stdexcept>
+#include <thread>
+
+using namespace std::chrono_literals;
+using namespace gpio::literals;
 
 int main(int argc, char* argv[])
 try
@@ -55,10 +61,39 @@ try
 
     auto chip = gpio::get_chip(argv[1]);
     std::cout << "Chip info:" << std::endl;
-    std::cout << "  type: " << chip->type() << std::endl;
-    std::cout << "    id: " << chip->id() << std::endl;
-    std::cout << "  name: " << chip->name() << std::endl;
-    std::cout << "  pins: " << chip->pin_count() << std::endl;
+    std::cout << "    type: " << chip->type() << std::endl;
+    std::cout << "      id: " << chip->id() << std::endl;
+    std::cout << "    name: " << chip->name() << std::endl;
+    std::cout << "    pins: " << chip->pin_count() << std::endl;
+    std::cout << std::endl;
+
+    auto pin = chip->pin(2);
+    pin->mode(gpio::pwm);
+    pin->period(10ms);
+
+    std::cout << "Pin info:" << std::endl;
+    std::cout << "     pos: " << pin->pos() << std::endl;
+    std::cout << "    name: " << pin->name() << std::endl;
+    std::cout << "    mode: " << pin->mode() << std::endl;
+    std::cout << "  period: " << pin->period().count() << "ns" << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "Fading pin up and down" << std::endl;
+    for(int n = 0; n < 10; ++n)
+    {
+        for(auto pc = 0_pc; pc < 100_pc; pc += 1)
+        {
+            pin->duty_cycle(pc);
+            std::this_thread::sleep_for(30ms);
+        }
+
+        for(auto time = 10ms; time > 0ms; time -= 1ms)
+        {
+            pin->pulse(time);
+            std::this_thread::sleep_for(30ms);
+        }
+    }
+    std::cout << "Done" << std::endl;
 
     return 0;
 }
