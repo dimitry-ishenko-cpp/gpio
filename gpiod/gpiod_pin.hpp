@@ -31,13 +31,13 @@ public:
 
     ////////////////////
     virtual gpio::mode mode() const noexcept override;
-    virtual void mode(gpio::mode, gpio::flag, gpio::value) override;
+    virtual void mode(gpio::mode, gpio::flag, gpio::state) override;
 
     virtual void detach() override;
     virtual bool detached() const noexcept override { return fd_ == invalid; }
 
-    virtual void value(gpio::value) override;
-    virtual gpio::value value() override;
+    virtual void set(gpio::state = gpio::on) override;
+    virtual gpio::state state() override;
 
     virtual void period(gpio::nsec) override;
     virtual void pulse(gpio::nsec) override;

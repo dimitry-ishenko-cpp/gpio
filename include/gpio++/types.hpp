@@ -76,13 +76,16 @@ inline constexpr
 flag operator~(flag x) noexcept { return static_cast<flag>(~static_cast<int>(x)); }
 
 ////////////////////////////////////////////////////////////////////////////////
-// pin value
-using value = int;
+// digital pin state
+using state = bool;
 
-// pwm period & pulse
+static constexpr state on = true;
+static constexpr state off = false;
+
+// pwm pin period & pulse
 using nsec = std::chrono::nanoseconds;
 
-// duty cycle
+// pwm pin duty cycle
 using percent = double;
 
 namespace literals
