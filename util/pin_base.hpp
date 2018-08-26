@@ -64,6 +64,8 @@ struct pin_base : public pin
     virtual bool used() const noexcept override { return used_; }
 
     ////////////////////
+    using pin::set;
+
     // virtual void set(gpio::state = gpio::on) = 0;
     virtual void reset() override { set(gpio::off); }
     // virtual gpio::state state() = 0;
@@ -72,10 +74,10 @@ struct pin_base : public pin
     virtual void period(gpio::nsec) override;
     virtual gpio::nsec period() const noexcept override { return period_; }
 
-    virtual void pulse(gpio::nsec) override;
+    virtual void set(gpio::nsec) override;
     virtual gpio::nsec pulse() const noexcept override { return pulse_; }
 
-    virtual void duty_cycle(gpio::percent) override;
+    virtual void set(gpio::percent) override;
     virtual gpio::percent duty_cycle() const noexcept override;
 
 protected:

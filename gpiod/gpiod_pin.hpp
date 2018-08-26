@@ -36,11 +36,14 @@ public:
     virtual void detach() override;
     virtual bool detached() const noexcept override { return fd_ == invalid; }
 
+    ////////////////////
+    using pin_base::set;
+
     virtual void set(gpio::state = gpio::on) override;
     virtual gpio::state state() override;
 
     virtual void period(gpio::nsec) override;
-    virtual void pulse(gpio::nsec) override;
+    virtual void set(gpio::nsec) override;
 
 private:
     ////////////////////
