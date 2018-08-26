@@ -69,7 +69,7 @@ auto convert(gpio::flag flags, std::initializer_list<gpio::flag> valid)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::value value)
+void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
 {
     detach();
 
@@ -100,7 +100,7 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::value value)
     gpiohandle_request req = { };
     req.lineoffsets[0]    = static_cast<__u32>(pos_);
     req.flags             = fl;
-    req.default_values[0] = static_cast<__u8>(!!value);
+    req.default_values[0] = state;
     std::strcpy(req.consumer_label, type_id(this).data());
     req.lines = 1;
 
@@ -131,21 +131,21 @@ void gpiod_pin::detach()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::value(gpio::value value)
+void gpiod_pin::set(gpio::state state)
 {
     throw_detached();
 
     gpiohandle_data data = { };
-    data.values[0] = static_cast<__u8>(!!value);
+    data.values[0] = state;
 
     auto status = ::ioctl(fd_, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
     if(status == -1) throw posix::errno_error(
-        type_id(this) + ": Error setting pin value " + std::to_string(value)
+        type_id(this) + ": Error setting pin value " + std::to_string(state)
     );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-gpio::value gpiod_pin::value()
+gpio::state gpiod_pin::state()
 {
     throw_detached();
 
@@ -217,7 +217,7 @@ void gpiod_pin::start_pwm()
         {
             if(high_ticks_)
             {
-                value(true);
+                set();
                 tp += gpio::nsec(high_ticks_);
                 std::this_thread::sleep_until(tp);
             }
@@ -225,7 +225,7 @@ void gpiod_pin::start_pwm()
 
             if(low_ticks_)
             {
-                value(false);
+                reset();
                 tp += gpio::nsec(low_ticks_);
                 std::this_thread::sleep_until(tp);
             }

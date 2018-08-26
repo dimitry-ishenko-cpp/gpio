@@ -34,11 +34,11 @@ struct pin_base : public pin
 
     ////////////////////
     virtual gpio::mode mode() const noexcept override { return mode_; }
-    virtual void mode(gpio::mode mode, gpio::flag flags, gpio::value) override
+    virtual void mode(gpio::mode mode, gpio::flag flags, gpio::state) override
     { mode_ = mode; flags_ = flags; }
     virtual void mode(gpio::mode mode, gpio::flag flags) override
     { this->mode(mode, flags, 0); }
-    virtual void mode(gpio::mode mode, gpio::value value) override
+    virtual void mode(gpio::mode mode, gpio::state value) override
     { this->mode(mode, gpio::flag { }, value); }
     virtual void mode(gpio::mode mode) override
     { this->mode(mode, gpio::flag { }); }
@@ -64,8 +64,9 @@ struct pin_base : public pin
     virtual bool used() const noexcept override { return used_; }
 
     ////////////////////
-    // virtual void value(gpio::value) = 0;
-    // virtual gpio::value value() = 0;
+    // virtual void set(gpio::state = gpio::on) = 0;
+    virtual void reset() override { set(gpio::off); }
+    // virtual gpio::state state() = 0;
 
     // pwm
     virtual void period(gpio::nsec) override;

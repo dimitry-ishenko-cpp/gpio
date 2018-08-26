@@ -34,9 +34,9 @@ struct pin
 
     ////////////////////
     virtual gpio::mode mode() const noexcept = 0;
-    virtual void mode(gpio::mode, gpio::flag, gpio::value) = 0;
+    virtual void mode(gpio::mode, gpio::flag, gpio::state) = 0;
     virtual void mode(gpio::mode, gpio::flag) = 0;
-    virtual void mode(gpio::mode, gpio::value) = 0;
+    virtual void mode(gpio::mode, gpio::state) = 0;
     virtual void mode(gpio::mode) = 0 ;
 
     virtual bool digital() const noexcept = 0;
@@ -58,8 +58,10 @@ struct pin
     virtual bool used() const noexcept = 0;
 
     ////////////////////
-    virtual void value(gpio::value) = 0;
-    virtual gpio::value value() = 0;
+    // digital
+    virtual void set(gpio::state = gpio::on) = 0;
+    virtual void reset() = 0;
+    virtual gpio::state state() = 0;
 
     // pwm
     virtual void period(gpio::nsec) = 0;
