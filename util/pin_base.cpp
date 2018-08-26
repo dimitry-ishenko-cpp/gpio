@@ -48,17 +48,17 @@ void pin_base::period(gpio::nsec period)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void pin_base::pulse(gpio::nsec pulse)
+void pin_base::set(gpio::nsec pulse)
 {
     using namespace std::chrono_literals;
     pulse_ = std::min(std::max(pulse, 0ns), period_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void pin_base::duty_cycle(gpio::percent pc)
+void pin_base::set(gpio::percent pc)
 {
     pc = std::max(0.0, std::min(pc, 100.0));
-    pulse(nsec( static_cast<nsec::rep>(period_.count() * pc / 100.0 + 0.5) ));
+    set(nsec( static_cast<nsec::rep>(period_.count() * pc / 100.0 + 0.5) ));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

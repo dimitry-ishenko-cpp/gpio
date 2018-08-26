@@ -168,10 +168,10 @@ void gpiod_pin::period(gpio::nsec period)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::pulse(gpio::nsec pulse)
+void gpiod_pin::set(gpio::nsec pulse)
 {
-    pin_base::pulse(pulse);
-    high_ticks_= pulse.count();
+    pin_base::set(pulse);
+    high_ticks_= pulse_.count();
     low_ticks_ = (period_ - pulse_).count();
 }
 
