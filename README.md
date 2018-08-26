@@ -93,13 +93,13 @@ try
     {
         for(auto pc = 0_pc; pc < 100_pc; pc += 1)
         {
-            pin->duty_cycle(pc);
+            pin->set(pc);
             std::this_thread::sleep_for(30ms);
         }
 
         for(auto time = 10ms; time > 0ms; time -= 1ms)
         {
-            pin->pulse(time);
+            pin->set(time);
             std::this_thread::sleep_for(30ms);
         }
     }
