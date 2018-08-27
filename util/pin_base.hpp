@@ -13,6 +13,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -66,6 +67,7 @@ struct pin_base : public pin
     ////////////////////
     using pin::set;
 
+    // digital
     // virtual void set(gpio::state = gpio::on) = 0;
     virtual void reset() override { set(gpio::off); }
     // virtual gpio::state state() = 0;
@@ -80,6 +82,15 @@ struct pin_base : public pin
     virtual void set(gpio::percent) override;
     virtual gpio::percent duty_cycle() const noexcept override;
 
+    ////////////////////
+    // digital callback
+    virtual void on_state_changed(gpio::state_changed fn) override
+    { state_changed_ = std::move(fn); }
+    virtual void on_state_on(gpio::state_on fn) override
+    { state_on_ = std::move(fn); }
+    virtual void on_state_off(gpio::state_off fn) override
+    { state_off_= std::move(fn); }
+
 protected:
     ////////////////////
     gpio::chip* chip_ = nullptr;
@@ -93,6 +104,10 @@ protected:
     bool used_ = false;
 
     gpio::nsec period_ { 100000000 }, pulse_ { 0 };
+
+    gpio::state_changed state_changed_;
+    gpio::state_on state_on_;
+    gpio::state_off state_off_;
 
     ////////////////////
     pin_base(gpio::chip*, gpio::pos) noexcept;

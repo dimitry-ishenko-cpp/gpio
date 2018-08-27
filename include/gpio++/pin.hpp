@@ -72,6 +72,12 @@ struct pin
 
     virtual void set(gpio::percent) = 0;
     virtual gpio::percent duty_cycle() const noexcept = 0;
+
+    ////////////////////
+    // digital callback
+    virtual void on_state_changed(gpio::state_changed) = 0;
+    virtual void on_state_on(gpio::state_on) = 0;
+    virtual void on_state_off(gpio::state_off) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
