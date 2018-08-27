@@ -10,6 +10,9 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 #include "chip_base.hpp"
+
+#include <asio/posix/stream_descriptor.hpp>
+#include <asio/io_context.hpp>
 #include <string>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -21,12 +24,12 @@ class gpiod_chip : public chip_base
 {
 public:
     ////////////////////
-    gpiod_chip(std::string id);
+    gpiod_chip(asio::io_context&, std::string id);
     virtual ~gpiod_chip() override;
 
 private:
     ////////////////////
-    int fd_;
+    asio::posix::stream_descriptor fd_;
     friend class gpiod_pin;
 };
 

@@ -5,27 +5,23 @@
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
 
 ////////////////////////////////////////////////////////////////////////////////
+#include "command.hpp"
 #include "gpiod_chip.hpp"
 #include "gpiod_pin.hpp"
-#include "posix/error.hpp"
 #include "type_id.hpp"
 
 #include <stdexcept>
 #include <utility>
 
-#include <fcntl.h>
 #include <linux/gpio.h>
-#include <sys/ioctl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-gpiod_chip::gpiod_chip(std::string id) : chip_base("gpiod")
+gpiod_chip::gpiod_chip(asio::io_context& io, std::string id) :
+    chip_base("gpiod"), fd_(io)
 {
     if(id.find_first_not_of("0123456789") != std::string::npos
         || id.size() < 1 || id.size() > 3)
@@ -37,34 +33,41 @@ gpiod_chip::gpiod_chip(std::string id) : chip_base("gpiod")
 
     ////////////////////
     std::string path = "/dev/gpiochip" + id_;
-    gpiochip_info info = { };
+    asio::error_code ec;
 
-    fd_ = ::open(path.data(), O_RDWR | O_CLOEXEC);
-    if(!fd_) throw posix::errno_error(
-        type_id(this) + ": Error opening file " + path
+    fd_.assign(::open(path.data(), O_RDWR | O_CLOEXEC), ec);
+    if(ec) throw std::runtime_error(
+        type_id(this) + ": Error opening file " + path + " - " + ec.message()
     );
 
-    auto status = ::ioctl(fd_, GPIO_GET_CHIPINFO_IOCTL, &info);
-    if(status == -1) throw posix::errno_error(
-        type_id(this) + ": Error getting chip info"
+    gpio::command<
+        gpiochip_info,
+        GPIO_GET_CHIPINFO_IOCTL
+    > cmd = { };
+
+    fd_.io_control(cmd, ec);
+    if(ec) throw std::runtime_error(
+        type_id(this) + ": Error getting chip info - " + ec.message()
     );
 
-    name_ = info.label;
+    name_ = cmd.get().label;
 
-    for(gpio::pos n = 0; n < info.lines; ++n)
+    for(gpio::pos n = 0; n < cmd.get().lines; ++n)
         pins_.emplace_back(new gpiod_pin(this, n));
 }
 
 gpiod_chip::~gpiod_chip()
 {
     pins_.clear();
-    ::close(fd_);
+
+    asio::error_code ec;
+    fd_.close(ec);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" gpio::chip* create_chip(std::string id)
-{ return new gpio::gpiod_chip(std::move(id)); }
+extern "C" gpio::chip* create_chip(asio::io_context& io, std::string id)
+{ return new gpio::gpiod_chip(io, std::move(id)); }
 extern "C" void delete_chip(gpio::chip* chip) { if(chip) delete chip; }
