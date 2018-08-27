@@ -30,7 +30,7 @@ void chip_deleter::operator()(gpio::chip* chip)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-unique_chip get_chip(std::string type)
+unique_chip get_chip(asio::io_context& io, std::string type)
 {
     std::string param;
     auto pos = type.find(':');
@@ -50,7 +50,7 @@ unique_chip get_chip(std::string type)
     );
     if(!create_chip) throw std::invalid_argument(::dlerror());
 
-    auto chip = unique_chip(create_chip(std::move(param)), { handle });
+    auto chip = unique_chip(create_chip(io, std::move(param)), { handle });
     if(!chip) throw std::invalid_argument(
         lib + ": create_chip() returned nullptr"
     );
