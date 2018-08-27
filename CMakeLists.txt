@@ -17,6 +17,7 @@ set(HEADERS
 )
 set(SOURCES lib/gpio.cpp)
 
+add_definitions(-DASIO_STANDALONE)
 add_library(gpio++ STATIC ${HEADERS} ${SOURCES})
 
 install(TARGETS gpio++ DESTINATION lib)
