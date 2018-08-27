@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "pin_base.hpp"
 
+#include <asio/posix/stream_descriptor.hpp>
 #include <atomic>
 #include <thread>
 
@@ -20,6 +21,8 @@ namespace gpio
 
 ////////////////////////////////////////////////////////////////////////////////
 class gpiod_chip;
+
+////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 class gpiod_pin : public pin_base
@@ -34,7 +37,7 @@ public:
     virtual void mode(gpio::mode, gpio::flag, gpio::state) override;
 
     virtual void detach() override;
-    virtual bool detached() const noexcept override { return fd_ == invalid; }
+    virtual bool detached() const noexcept override { return !fd_.is_open(); }
 
     ////////////////////
     using pin_base::set;
@@ -47,11 +50,11 @@ public:
 
 private:
     ////////////////////
-    static constexpr int invalid = -1;
-    int fd_ = invalid;
+    asio::posix::stream_descriptor fd_;
 
     void update();
     void throw_detached() const;
+    void throw_pwm() const;
 
     ////////////////////
     using ticks = gpio::nsec::rep;

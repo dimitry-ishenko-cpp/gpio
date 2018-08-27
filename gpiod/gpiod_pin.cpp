@@ -5,19 +5,18 @@
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
 
 ////////////////////////////////////////////////////////////////////////////////
+#include "command.hpp"
 #include "gpiod_chip.hpp"
 #include "gpiod_pin.hpp"
-#include "posix/error.hpp"
 #include "type_id.hpp"
 
 #include <chrono>
 #include <cstring>
 #include <initializer_list>
 #include <stdexcept>
+#include <string>
 
 #include <linux/gpio.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -25,7 +24,7 @@ namespace gpio
 
 ////////////////////////////////////////////////////////////////////////////////
 gpiod_pin::gpiod_pin(gpiod_chip* chip, gpio::pos n) :
-    pin_base(chip, n)
+    pin_base(chip, n), fd_(chip->fd_.get_executor().context())
 {
     modes_ = { gpio::digital_in, gpio::digital_out, gpio::pwm };
     valid_ = gpio::active_low | gpio::open_drain | gpio::open_source;
@@ -97,20 +96,23 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
         throw std::invalid_argument(type_id(this) + ": " + msg);
     }
 
-    gpiohandle_request req = { };
-    req.lineoffsets[0]    = static_cast<__u32>(pos_);
-    req.flags             = fl;
-    req.default_values[0] = state;
-    std::strcpy(req.consumer_label, type_id(this).data());
-    req.lines = 1;
+    gpio::command<
+        gpiohandle_request,
+        GPIO_GET_LINEHANDLE_IOCTL
+    > cmd = { };
+    asio::error_code ec;
 
-    auto status = ::ioctl(
-        static_cast<gpiod_chip*>(chip_)->fd_, GPIO_GET_LINEHANDLE_IOCTL, &req
+    cmd.get().lineoffsets[0]    = static_cast<__u32>(pos_);
+    cmd.get().flags             = fl;
+    cmd.get().default_values[0] = state;
+    std::strcpy(cmd.get().consumer_label, type_id(this).data());
+    cmd.get().lines = 1;
+
+    static_cast<gpiod_chip*>(chip_)->fd_.io_control(cmd, ec);
+    if(ec) throw std::runtime_error(
+        type_id(this) + ": Error getting pin handle - " + ec.message()
     );
-    if(status == -1 || req.fd <= 0) throw posix::errno_error(
-        type_id(this) + ": Error getting pin handle"
-    );
-    fd_ = req.fd;
+    fd_.assign(cmd.get().fd);
 
     update();
     if(mode == gpio::pwm) start_pwm();
@@ -119,13 +121,11 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
 ////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::detach()
 {
-    if(fd_ != invalid)
+    if(fd_.is_open())
     {
         stop_pwm();
 
-        ::close(fd_);
-        fd_ = invalid;
-
+        fd_.close();
         update();
     }
 }
@@ -134,13 +134,19 @@ void gpiod_pin::detach()
 void gpiod_pin::set(gpio::state state)
 {
     throw_detached();
+    throw_pwm();
 
-    gpiohandle_data data = { };
-    data.values[0] = state;
+    gpio::command<
+        gpiohandle_data,
+        GPIOHANDLE_SET_LINE_VALUES_IOCTL
+    > cmd = { };
+    asio::error_code ec;
 
-    auto status = ::ioctl(fd_, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
-    if(status == -1) throw posix::errno_error(
-        type_id(this) + ": Error setting pin value " + std::to_string(state)
+    cmd.get().values[0] = state;
+
+    fd_.io_control(cmd, ec);
+    if(ec) throw std::runtime_error(
+        type_id(this) + ": Error setting pin value - " + ec.message()
     );
 }
 
@@ -148,15 +154,20 @@ void gpiod_pin::set(gpio::state state)
 gpio::state gpiod_pin::state()
 {
     throw_detached();
+    throw_pwm();
 
-    gpiohandle_data data = { };
+    gpio::command<
+        gpiohandle_data,
+        GPIOHANDLE_GET_LINE_VALUES_IOCTL
+    > cmd = { };
+    asio::error_code ec;
 
-    auto status = ::ioctl(fd_, GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
-    if(status == -1) throw posix::errno_error(
-        type_id(this) + ": Error getting pin value"
+    fd_.io_control(cmd, ec);
+    if(ec) throw std::runtime_error(
+        type_id(this) + ": Error getting pin value - " + ec.message()
     );
 
-    return data.values[0];
+    return cmd.get().values[0];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -178,32 +189,43 @@ void gpiod_pin::set(gpio::nsec pulse)
 ////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::update()
 {
-    gpioline_info info = { };
-    info.line_offset = static_cast<__u32>(pos_);
+    gpio::command<
+        gpioline_info,
+        GPIO_GET_LINEINFO_IOCTL
+    > cmd = { };
+    asio::error_code ec;
 
-    auto status = ::ioctl(
-        static_cast<gpiod_chip*>(chip_)->fd_, GPIO_GET_LINEINFO_IOCTL, &info
-    );
-    if(status == -1) throw posix::errno_error(
-        type_id(this) + ": Error getting pin info"
+    cmd.get().line_offset = static_cast<__u32>(pos_);
+
+    static_cast<gpiod_chip*>(chip_)->fd_.io_control(cmd, ec);
+    if(ec) throw std::runtime_error(
+        type_id(this) + ": Error getting pin info - " + ec.message()
     );
 
-    name_ = info.name;
-    mode_ = info.flags & GPIOLINE_FLAG_IS_OUT ? gpio::digital_out : gpio::digital_in;
+    name_ = cmd.get().name;
+    mode_ = cmd.get().flags & GPIOLINE_FLAG_IS_OUT ? gpio::digital_out : gpio::digital_in;
 
     flags_ = { };
-    if(info.flags & GPIOLINE_FLAG_ACTIVE_LOW ) flags_ |= gpio::active_low;
-    if(info.flags & GPIOLINE_FLAG_OPEN_DRAIN ) flags_ |= gpio::open_drain;
-    if(info.flags & GPIOLINE_FLAG_OPEN_SOURCE) flags_ |= gpio::open_source;
+    if(cmd.get().flags & GPIOLINE_FLAG_ACTIVE_LOW ) flags_ |= gpio::active_low;
+    if(cmd.get().flags & GPIOLINE_FLAG_OPEN_DRAIN ) flags_ |= gpio::open_drain;
+    if(cmd.get().flags & GPIOLINE_FLAG_OPEN_SOURCE) flags_ |= gpio::open_source;
 
-    used_ = info.flags & GPIOLINE_FLAG_KERNEL;
+    used_ = cmd.get().flags & GPIOLINE_FLAG_KERNEL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::throw_detached() const
 {
     if(detached()) throw std::logic_error(
-        type_id(this) + ": Using detached instance"
+        type_id(this) + ": Cannot get/set pin state - Detached instance"
+    );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void gpiod_pin::throw_pwm() const
+{
+    if(mode() == gpio::pwm) throw std::logic_error(
+        type_id(this) + ": Cannot get/set pin state - PWM in-progress"
     );
 }
 
@@ -213,11 +235,19 @@ void gpiod_pin::start_pwm()
     stop_ = false;
     thread_ = std::thread([&]
     {
+        gpio::command<
+            gpiohandle_data,
+            GPIOHANDLE_SET_LINE_VALUES_IOCTL
+        > cmd = { };
+        asio::error_code ec;
+
         for(auto tp = std::chrono::high_resolution_clock::now();;)
         {
             if(high_ticks_)
             {
-                set();
+                cmd.get().values[0] = true;
+                fd_.io_control(cmd, ec);
+
                 tp += gpio::nsec(high_ticks_);
                 std::this_thread::sleep_until(tp);
             }
@@ -225,7 +255,9 @@ void gpiod_pin::start_pwm()
 
             if(low_ticks_)
             {
-                reset();
+                cmd.get().values[0] = false;
+                fd_.io_control(cmd, ec);
+
                 tp += gpio::nsec(low_ticks_);
                 std::this_thread::sleep_until(tp);
             }
