@@ -9,7 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include_directories(../include ../util)
 
-set(HEADERS gpiod_chip.hpp gpiod_pin.hpp)
+set(HEADERS command.hpp gpiod_chip.hpp gpiod_pin.hpp)
 set(SOURCES gpiod_chip.cpp gpiod_pin.cpp)
 
 add_library(gpio++-gpiod SHARED
