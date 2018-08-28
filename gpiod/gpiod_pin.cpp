@@ -35,12 +35,6 @@ gpiod_pin::gpiod_pin(gpiod_chip* chip, gpio::pos n) :
 gpiod_pin::~gpiod_pin() { detach(); }
 
 ////////////////////////////////////////////////////////////////////////////////
-gpio::mode gpiod_pin::mode() const noexcept
-{
-    return thread_.joinable() ? gpio::pwm : mode_;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
 {
     detach();
@@ -80,7 +74,7 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
     }
 
     update();
-    if(mode == gpio::pwm) start_pwm();
+    if(mode == gpio::pwm) pwm_start();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -88,7 +82,7 @@ void gpiod_pin::detach()
 {
     if(!detached())
     {
-        stop_pwm();
+        if(pwm_started()) pwm_stop();
 
         fd_.close();
         update();
@@ -226,10 +220,10 @@ void gpiod_pin::mode_digital_out(uint32_t flags, gpio::state state)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::start_pwm()
+void gpiod_pin::pwm_start()
 {
     stop_ = false;
-    thread_ = std::thread([&]
+    pwm_ = std::async(std::launch::async, [&]()
     {
         gpio::command<
             gpiohandle_data,
@@ -263,13 +257,10 @@ void gpiod_pin::start_pwm()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::stop_pwm()
+void gpiod_pin::pwm_stop()
 {
-    if(thread_.joinable())
-    {
-        stop_ = true;
-        thread_.join();
-    }
+    stop_ = true;
+    pwm_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -14,7 +14,7 @@
 #include <asio/posix/stream_descriptor.hpp>
 #include <atomic>
 #include <cstdint>
-#include <thread>
+#include <future>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -34,7 +34,8 @@ public:
     virtual ~gpiod_pin() override;
 
     ////////////////////
-    virtual gpio::mode mode() const noexcept override;
+    virtual gpio::mode mode() const noexcept override
+    { return pwm_started() ? gpio::pwm : mode_; }
     virtual void mode(gpio::mode, gpio::flag, gpio::state) override;
 
     virtual void detach() override;
@@ -64,11 +65,12 @@ private:
     std::atomic<ticks> high_ticks_ { pulse_.count() };
     std::atomic<ticks> low_ticks_ { period_.count() - high_ticks_ };
 
-    std::thread thread_;
+    std::future<void> pwm_;
     std::atomic<bool> stop_ { false };
 
-    void start_pwm();
-    void stop_pwm();
+    void pwm_start();
+    void pwm_stop();
+    bool pwm_started() const noexcept { return pwm_.valid(); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
