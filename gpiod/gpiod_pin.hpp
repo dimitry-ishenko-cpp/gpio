@@ -13,6 +13,7 @@
 
 #include <asio/posix/stream_descriptor.hpp>
 #include <atomic>
+#include <cstdint>
 #include <thread>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,7 +55,9 @@ private:
 
     void update();
     void throw_detached() const;
-    void throw_pwm() const;
+
+    void mode_digital_in(std::uint32_t flags);
+    void mode_digital_out(std::uint32_t flags, gpio::state);
 
     ////////////////////
     using ticks = gpio::nsec::rep;
