@@ -27,7 +27,7 @@ gpiod_pin::gpiod_pin(gpiod_chip* chip, gpio::pos n) :
     pin_base(chip, n), fd_(chip->fd_.get_executor().context())
 {
     modes_ = { gpio::digital_in, gpio::digital_out, gpio::pwm };
-    valid_ = gpio::active_low | gpio::open_drain | gpio::open_source;
+    valid_ = { gpio::active_low, gpio::open_drain, gpio::open_source };
 
     update();
 }
