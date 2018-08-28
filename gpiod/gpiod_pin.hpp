@@ -24,8 +24,6 @@ namespace gpio
 class gpiod_chip;
 
 ////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
 class gpiod_pin : public pin_base
 {
 public:
@@ -55,8 +53,6 @@ private:
     asio::posix::stream_descriptor fd_;
 
     void update();
-    void throw_detached() const;
-
     void mode_digital_in(std::uint32_t flags);
     void mode_digital_out(std::uint32_t flags, gpio::state);
 
