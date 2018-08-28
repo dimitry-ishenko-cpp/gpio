@@ -45,9 +45,9 @@ struct pin
     virtual bool input() const noexcept = 0;
     virtual bool output() const noexcept = 0;
 
-    virtual bool supports(gpio::mode) const noexcept = 0;
-
     virtual bool is(gpio::flag) const noexcept = 0;
+
+    virtual bool supports(gpio::mode) const noexcept = 0;
     virtual bool supports(gpio::flag) const noexcept = 0;
 
     ////////////////////
