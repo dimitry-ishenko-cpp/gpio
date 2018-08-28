@@ -53,7 +53,7 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
     }
 
     if(flags) throw std::invalid_argument(
-        type_id(this) + ": Cannot set pin mode - Invalid flag(s) " + std::to_string(flags)
+        type_id(this) + ": Cannot set pin mode - Invalid flag(s): " + std::to_string(flags)
     );
 
     switch(mode)
@@ -69,7 +69,7 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
 
     default:
         throw std::invalid_argument(
-            type_id(this) + ": Cannot set pin mode - Invalid mode " + std::to_string(mode)
+            type_id(this) + ": Cannot set pin mode - Invalid mode: " + std::to_string(mode)
         );
     }
 
