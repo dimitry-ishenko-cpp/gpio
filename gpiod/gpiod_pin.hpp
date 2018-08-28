@@ -15,6 +15,7 @@
 #include <atomic>
 #include <cstdint>
 #include <future>
+#include <vector>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -55,6 +56,9 @@ private:
     void update();
     void mode_digital_in(std::uint32_t flags);
     void mode_digital_out(std::uint32_t flags, gpio::state);
+
+    std::vector<char> buffer_;
+    void sched_read();
 
     ////////////////////
     using ticks = gpio::nsec::rep;

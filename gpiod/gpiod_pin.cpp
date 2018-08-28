@@ -10,6 +10,7 @@
 #include "gpiod_pin.hpp"
 #include "type_id.hpp"
 
+#include <asio.hpp>
 #include <chrono>
 #include <cstring>
 #include <initializer_list>
@@ -23,8 +24,9 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-gpiod_pin::gpiod_pin(gpiod_chip* chip, gpio::pos n) :
-    pin_base(chip, n), fd_(chip->fd_.get_executor().context())
+gpiod_pin::gpiod_pin(gpiod_chip* chip, gpio::pos n) : pin_base(chip, n),
+    fd_(chip->fd_.get_executor().context()),
+    buffer_(sizeof(gpioevent_data))
 {
     modes_ = { gpio::digital_in, gpio::digital_out, gpio::pwm };
     valid_ = { gpio::active_low, gpio::open_drain, gpio::open_source };
@@ -178,15 +180,15 @@ void gpiod_pin::update()
 void gpiod_pin::mode_digital_in(uint32_t flags)
 {
     gpio::command<
-        gpiohandle_request,
-        GPIO_GET_LINEHANDLE_IOCTL
+        gpioevent_request,
+        GPIO_GET_LINEEVENT_IOCTL
     > cmd = { };
     asio::error_code ec;
 
-    cmd.get().lineoffsets[0]    = static_cast<__u32>(pos_);
-    cmd.get().flags             = GPIOHANDLE_REQUEST_INPUT | flags;
+    cmd.get().lineoffset  = static_cast<__u32>(pos_);
+    cmd.get().handleflags = GPIOHANDLE_REQUEST_INPUT | flags;
+    cmd.get().eventflags  = GPIOEVENT_REQUEST_BOTH_EDGES;
     std::strcpy(cmd.get().consumer_label, type_id(this).data());
-    cmd.get().lines = 1;
 
     static_cast<gpiod_chip*>(chip_)->fd_.io_control(cmd, ec);
     if(ec) throw std::runtime_error(
@@ -194,6 +196,7 @@ void gpiod_pin::mode_digital_in(uint32_t flags)
     );
 
     fd_.assign(cmd.get().fd);
+    sched_read();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -217,6 +220,26 @@ void gpiod_pin::mode_digital_out(uint32_t flags, gpio::state state)
     );
 
     fd_.assign(cmd.get().fd);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void gpiod_pin::sched_read()
+{
+    asio::async_read(fd_, asio::buffer(buffer_),
+        [&](const asio::error_code& ec, std::size_t)
+        {
+            if(ec) return;
+
+            auto ev = reinterpret_cast<gpioevent_data*>(buffer_.data());
+            auto state = ev->id == GPIOEVENT_EVENT_RISING_EDGE ? gpio::on : gpio::off;
+
+            if(state_changed_) state_changed_(state);
+            if(state == gpio::on && state_on_) state_on_();
+            if(state == gpio::off && state_off_) state_off_();
+
+            sched_read();
+        }
+    );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
