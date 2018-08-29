@@ -11,8 +11,11 @@ Chip-specific backends can provide additional functionality supported by the giv
 ### Prerequisites
 
 * Linux kernel >= 4.8
+* [asio C++ Library](https://think-async.com/) >= 1.12.1
 * Linux headers >= 4.8
 * CMake >= 3.1
+
+NB: asio 1.12.1 has a bug that may cause SIGSEGV due to null pointer deference, when using callbacks, eg. `gpio::pin::on_state_changed()`. It is recommended that you install patched version 1.12.1 from [here](https://github.com/dimitry-ishenko-cpp/asio/releases/tag/asio-1-12-1). Alternatively, you can apply patch [a3afaec](https://github.com/dimitry-ishenko-cpp/asio/commit/a3afaecc1ef6e2f2a72af18132c1b509cd3ebe5b) directly to your existing asio installation.
 
 ### Installation
 
@@ -52,6 +55,7 @@ Example:
 ```cpp
 #include <gpio++/gpio.hpp>
 
+#include <asio.hpp>
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
@@ -69,7 +73,9 @@ try
         throw std::invalid_argument("Missing <chip> argument");
     }
 
-    auto chip = gpio::get_chip(argv[1]);
+    asio::io_service io;
+
+    auto chip = gpio::get_chip(io, argv[1]);
     std::cout << "Chip info:" << std::endl;
     std::cout << "    type: " << chip->type() << std::endl;
     std::cout << "      id: " << chip->id() << std::endl;
@@ -116,7 +122,7 @@ catch(std::exception& e)
 
 Compile and run:
 ```console
-$ g++ example.cpp -o example -lgpio++ -ldl
+$ g++ example.cpp -o example -DASIO_STANDALONE -lgpio++ -ldl
 $ ./example gpiod:0
 ```
 
