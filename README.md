@@ -51,7 +51,7 @@ $ sudo make install
 
 ### Usage
 
-Example:
+Example 1:
 ```cpp
 #include <gpio++/gpio.hpp>
 
@@ -122,8 +122,56 @@ catch(std::exception& e)
 
 Compile and run:
 ```console
-$ g++ example.cpp -o example -DASIO_STANDALONE -lgpio++ -ldl
-$ ./example gpiod:0
+$ g++ example1.cpp -o example1 -DASIO_STANDALONE -lgpio++ -ldl
+$ ./example1 gpiod:0
+```
+
+Example 2 (callback):
+```cpp
+#include <gpio++/gpio.hpp>
+
+#include <asio.hpp>
+#include <iostream>
+#include <stdexcept>
+
+int main(int argc, char* argv[])
+try
+{
+    if(argc < 2)
+    {
+        std::cerr << "Usage: " << argv[0] << " <chip>" << std::endl;
+        throw std::invalid_argument("Missing <chip> argument");
+    }
+
+    asio::io_service io;
+
+    auto chip = gpio::get_chip(io, argv[1]);
+    auto pin = chip->pin(2);
+
+    std::cout << "Setting pin #" << pin->pos() << " mode to input" << std::endl;
+    pin->mode(gpio::digital_in);
+
+    std::cout << "Monitoring pin:" << std::endl;
+
+    pin->on_state_on([]() { std::cout << "ON" << std::endl; });
+    pin->on_state_off([]() { std::cout << "OFF" << std::endl; });
+
+    pin->on_state_changed([](gpio::state s) { std::cout << "State=" << s << std::endl; });
+
+    io.run();
+    return 0;
+}
+catch(std::exception& e)
+{
+    std::cerr << e.what() << std::endl;
+    return 1;
+}
+```
+
+Compile and run:
+```console
+$ g++ example2.cpp -o example2 -DASIO_STANDALONE -lgpio++ -ldl
+$ ./example2 gpiod:0
 ```
 
 ## Authors
