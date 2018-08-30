@@ -43,11 +43,11 @@ struct pin_base : public pin
     { this->mode(mode, gpio::flag(0)); }
     virtual gpio::mode mode() const noexcept override { return mode_; }
 
-    virtual bool digital() const noexcept override;
-    virtual bool analog() const noexcept override;
+    virtual bool is_digital() const noexcept override;
+    virtual bool is_analog() const noexcept override;
 
-    virtual bool input() const noexcept override;
-    virtual bool output() const noexcept override;
+    virtual bool is_input() const noexcept override;
+    virtual bool is_output() const noexcept override;
 
     virtual bool is(gpio::flag flag) const noexcept override { return flags_ & flag; }
 
