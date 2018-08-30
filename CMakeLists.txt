@@ -42,6 +42,7 @@ set(CPACK_PACKAGE_FILE_NAME
 )
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "C++ GPIO Library for Linux")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Dimitry Ishenko <dimitry (dot) ishenko (at) (gee) mail (dot) com>")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libasio-dev (>= 1:1.12.1-1)")
 
 set(CPACK_SOURCE_GENERATOR ZIP)
 set(CPACK_SOURCE_IGNORE_FILES /\.git.*;/build/;\.user$)
