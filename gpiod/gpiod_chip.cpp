@@ -53,9 +53,10 @@ gpiod_chip::gpiod_chip(asio::io_context& io, std::string id) :
     name_ = cmd.get().label;
 
     for(gpio::pos n = 0; n < cmd.get().lines; ++n)
-        pins_.emplace_back(new gpiod_pin(this, n));
+        pins_.emplace_back(new gpiod_pin(io, this, n));
 }
 
+////////////////////////////////////////////////////////////////////////////////
 gpiod_chip::~gpiod_chip()
 {
     pins_.clear();
