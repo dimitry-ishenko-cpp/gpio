@@ -233,9 +233,6 @@ void gpiod_pin::sched_read()
             auto state = ev->id == GPIOEVENT_EVENT_RISING_EDGE ? gpio::on : gpio::off;
 
             if(state_changed_) state_changed_(state);
-            if(state == gpio::on && state_on_) state_on_();
-            if(state == gpio::off && state_off_) state_off_();
-
             sched_read();
         }
     );
