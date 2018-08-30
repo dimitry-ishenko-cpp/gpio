@@ -9,6 +9,7 @@
 #include "pin_base.hpp"
 
 #include <algorithm>
+#include <utility>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -66,6 +67,11 @@ gpio::percent pin_base::duty_cycle() const noexcept
 {
     return 100.0 * pulse_.count() / period_.count();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void pin_base::on_state_changed(state_changed fn) { state_changed_ = std::move(fn); }
+void pin_base::on_state_on(state_on fn) { state_on_ = std::move(fn); }
+void pin_base::on_state_off(state_off fn) { state_off_= std::move(fn); }
 
 ////////////////////////////////////////////////////////////////////////////////
 }

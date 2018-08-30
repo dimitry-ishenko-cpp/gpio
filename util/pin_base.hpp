@@ -13,7 +13,6 @@
 
 #include <set>
 #include <string>
-#include <utility>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -34,15 +33,15 @@ struct pin_base : public pin
     virtual const std::string& name() const noexcept override { return name_; }
 
     ////////////////////
-    virtual gpio::mode mode() const noexcept override { return mode_; }
     virtual void mode(gpio::mode mode, gpio::flag flags, gpio::state) override
     { mode_ = mode; flags_ = flags; }
     virtual void mode(gpio::mode mode, gpio::flag flags) override
-    { this->mode(mode, flags, 0); }
+    { this->mode(mode, flags, gpio::off); }
     virtual void mode(gpio::mode mode, gpio::state value) override
-    { this->mode(mode, gpio::flag { }, value); }
+    { this->mode(mode, gpio::flag(0), value); }
     virtual void mode(gpio::mode mode) override
-    { this->mode(mode, gpio::flag { }); }
+    { this->mode(mode, gpio::flag(0)); }
+    virtual gpio::mode mode() const noexcept override { return mode_; }
 
     virtual bool digital() const noexcept override;
     virtual bool analog() const noexcept override;
@@ -83,12 +82,9 @@ struct pin_base : public pin
 
     ////////////////////
     // digital callback
-    virtual void on_state_changed(gpio::state_changed fn) override
-    { state_changed_ = std::move(fn); }
-    virtual void on_state_on(gpio::state_on fn) override
-    { state_on_ = std::move(fn); }
-    virtual void on_state_off(gpio::state_off fn) override
-    { state_off_= std::move(fn); }
+    virtual void on_state_changed(gpio::state_changed) override;
+    virtual void on_state_on(gpio::state_on) override;
+    virtual void on_state_off(gpio::state_off) override;
 
 protected:
     ////////////////////
