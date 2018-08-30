@@ -100,11 +100,9 @@ protected:
     std::set<gpio::mode> modes_;
     std::set<gpio::flag> valid_;
 
-    gpio::nsec period_ { 100000000 }, pulse_ { 0 };
+    gpio::nsec period_ { 100'000'000 }, pulse_ { 0 };
 
     gpio::state_changed state_changed_;
-    gpio::state_on state_on_;
-    gpio::state_off state_off_;
 
     ////////////////////
     pin_base(gpio::chip*, gpio::pos) noexcept;
