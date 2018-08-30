@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "pin_base.hpp"
 
+#include <asio/io_context.hpp>
 #include <asio/posix/stream_descriptor.hpp>
 #include <atomic>
 #include <cstdint>
@@ -29,13 +30,13 @@ class gpiod_pin : public pin_base
 {
 public:
     ////////////////////
-    gpiod_pin(gpiod_chip*, gpio::pos);
+    gpiod_pin(asio::io_context&, gpiod_chip*, gpio::pos);
     virtual ~gpiod_pin() override;
 
     ////////////////////
+    virtual void mode(gpio::mode, gpio::flag, gpio::state) override;
     virtual gpio::mode mode() const noexcept override
     { return pwm_started() ? gpio::pwm : mode_; }
-    virtual void mode(gpio::mode, gpio::flag, gpio::state) override;
 
     virtual void detach() override;
     virtual bool detached() const noexcept override { return !fd_.is_open(); }
