@@ -33,17 +33,17 @@ struct pin
     virtual const std::string& name() const noexcept = 0;
 
     ////////////////////
-    virtual gpio::mode mode() const noexcept = 0;
     virtual void mode(gpio::mode, gpio::flag, gpio::state) = 0;
     virtual void mode(gpio::mode, gpio::flag) = 0;
     virtual void mode(gpio::mode, gpio::state) = 0;
     virtual void mode(gpio::mode) = 0 ;
+    virtual gpio::mode mode() const noexcept = 0;
 
-    virtual bool digital() const noexcept = 0;
-    virtual bool analog() const noexcept = 0;
+    virtual bool is_digital() const noexcept = 0;
+    virtual bool is_analog() const noexcept = 0;
 
-    virtual bool input() const noexcept = 0;
-    virtual bool output() const noexcept = 0;
+    virtual bool is_input() const noexcept = 0;
+    virtual bool is_output() const noexcept = 0;
 
     virtual bool is(gpio::flag) const noexcept = 0;
 

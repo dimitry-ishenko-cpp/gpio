@@ -35,11 +35,11 @@ inline auto find(const Cont& cont, const T& value)
 
 }
 
-inline bool pin_base::digital() const noexcept { return find(gpio::digital_modes, mode_); }
-inline bool pin_base::analog() const noexcept { return find(gpio::analog_modes, mode_); }
+inline bool pin_base::is_digital() const noexcept { return find(gpio::digital_modes, mode_); }
+inline bool pin_base::is_analog() const noexcept { return find(gpio::analog_modes, mode_); }
 
-inline bool pin_base::input() const noexcept { return find(gpio::input_modes, mode_); }
-inline bool pin_base::output() const noexcept { return find(gpio::output_modes, mode_); }
+inline bool pin_base::is_input() const noexcept { return find(gpio::input_modes, mode_); }
+inline bool pin_base::is_output() const noexcept { return find(gpio::output_modes, mode_); }
 
 ////////////////////////////////////////////////////////////////////////////////
 void pin_base::period(gpio::nsec period)
