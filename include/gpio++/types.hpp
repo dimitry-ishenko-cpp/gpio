@@ -93,11 +93,11 @@ namespace literals
 {
 
 constexpr inline
-auto operator"" _pc(long double pc) noexcept
+auto operator""_pc(long double pc) noexcept
 { return static_cast<gpio::percent>(pc); }
 
 constexpr inline
-auto operator"" _pc(unsigned long long pc) noexcept
+auto operator""_pc(unsigned long long pc) noexcept
 { return static_cast<gpio::percent>(pc); }
 
 }

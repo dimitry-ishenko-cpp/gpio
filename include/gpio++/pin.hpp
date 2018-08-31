@@ -52,10 +52,10 @@ struct pin
 
     ////////////////////
     virtual void detach() = 0;
-    virtual bool detached() const noexcept = 0;
+    virtual bool is_detached() const noexcept = 0;
 
     // pin is in-use eg by the kernel
-    virtual bool used() const noexcept = 0;
+    virtual bool is_used() const noexcept = 0;
 
     ////////////////////
     // digital

@@ -81,7 +81,7 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
 ////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::detach()
 {
-    if(!detached())
+    if(!is_detached())
     {
         if(pwm_started()) pwm_stop();
 
@@ -93,7 +93,7 @@ void gpiod_pin::detach()
 ////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::set(gpio::state state)
 {
-    if(detached()) throw std::logic_error(
+    if(is_detached()) throw std::logic_error(
         type_id(this) + ": Cannot set pin state - Detached instance"
     );
 
@@ -114,7 +114,7 @@ void gpiod_pin::set(gpio::state state)
 ////////////////////////////////////////////////////////////////////////////////
 gpio::state gpiod_pin::state()
 {
-    if(detached()) throw std::logic_error(
+    if(is_detached()) throw std::logic_error(
         type_id(this) + ": Cannot get pin state - Detached instance"
     );
 

@@ -60,7 +60,7 @@ struct pin_base : public pin
     // virtual void detach() = 0;
     // virtual bool detached() const noexcept = 0;
 
-    virtual bool used() const noexcept override { return used_; }
+    virtual bool is_used() const noexcept override { return used_; }
 
     ////////////////////
     using pin::set;

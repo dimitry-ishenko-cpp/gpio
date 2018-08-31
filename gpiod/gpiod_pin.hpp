@@ -39,7 +39,7 @@ public:
     { return pwm_started() ? gpio::pwm : mode_; }
 
     virtual void detach() override;
-    virtual bool detached() const noexcept override { return !fd_.is_open(); }
+    virtual bool is_detached() const noexcept override { return !fd_.is_open(); }
 
     ////////////////////
     using pin_base::set;
