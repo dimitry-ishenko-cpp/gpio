@@ -12,7 +12,7 @@
 #include "chip_base.hpp"
 
 #include <asio/posix/stream_descriptor.hpp>
-#include <asio/io_context.hpp>
+#include <asio/io_service.hpp>
 #include <string>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -24,7 +24,7 @@ class gpiod_chip : public chip_base
 {
 public:
     ////////////////////
-    gpiod_chip(asio::io_context&, std::string id);
+    gpiod_chip(asio::io_service&, std::string id);
     virtual ~gpiod_chip() override;
 
 private:

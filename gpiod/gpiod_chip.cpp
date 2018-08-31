@@ -20,7 +20,7 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-gpiod_chip::gpiod_chip(asio::io_context& io, std::string id) :
+gpiod_chip::gpiod_chip(asio::io_service& io, std::string id) :
     chip_base("gpiod"), fd_(io)
 {
     if(id.find_first_not_of("0123456789") != std::string::npos
@@ -69,6 +69,6 @@ gpiod_chip::~gpiod_chip()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" gpio::chip* create_chip(asio::io_context& io, std::string id)
+extern "C" gpio::chip* create_chip(asio::io_service& io, std::string id)
 { return new gpio::gpiod_chip(io, std::move(id)); }
 extern "C" void delete_chip(gpio::chip* chip) { if(chip) delete chip; }

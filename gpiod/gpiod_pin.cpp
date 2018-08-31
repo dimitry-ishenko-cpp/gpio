@@ -24,7 +24,7 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-gpiod_pin::gpiod_pin(asio::io_context& io, gpiod_chip* chip, gpio::pos n) :
+gpiod_pin::gpiod_pin(asio::io_service& io, gpiod_chip* chip, gpio::pos n) :
     pin_base(chip, n), fd_(io), buffer_(sizeof(gpioevent_data))
 {
     modes_ = { gpio::digital_in, gpio::digital_out, gpio::pwm };

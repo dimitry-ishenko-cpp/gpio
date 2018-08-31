@@ -30,7 +30,7 @@ void chip_deleter::operator()(gpio::chip* chip)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-unique_chip get_chip(asio::io_context& io, std::string type)
+unique_chip get_chip(asio::io_service& io, std::string type)
 {
     std::string param;
     auto pos = type.find(':');

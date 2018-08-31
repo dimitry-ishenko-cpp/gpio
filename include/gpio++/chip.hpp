@@ -12,7 +12,7 @@
 #include <gpio++/pin.hpp>
 #include <gpio++/types.hpp>
 
-#include <asio/io_context.hpp>
+#include <asio/io_service.hpp>
 #include <cstddef>
 #include <string>
 
@@ -42,7 +42,7 @@ struct chip
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" gpio::chip* create_chip(asio::io_context&, std::string param);
+extern "C" gpio::chip* create_chip(asio::io_service&, std::string param);
 extern "C" void delete_chip(gpio::chip*);
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "pin_base.hpp"
 
-#include <asio/io_context.hpp>
+#include <asio/io_service.hpp>
 #include <asio/posix/stream_descriptor.hpp>
 #include <atomic>
 #include <cstdint>
@@ -30,7 +30,7 @@ class gpiod_pin : public pin_base
 {
 public:
     ////////////////////
-    gpiod_pin(asio::io_context&, gpiod_chip*, gpio::pos);
+    gpiod_pin(asio::io_service&, gpiod_chip*, gpio::pos);
     virtual ~gpiod_pin() override;
 
     ////////////////////

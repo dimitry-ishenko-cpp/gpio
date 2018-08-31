@@ -30,7 +30,7 @@ struct chip_deleter
 };
 using unique_chip = std::unique_ptr<chip, chip_deleter>;
 
-unique_chip get_chip(asio::io_context&, std::string type);
+unique_chip get_chip(asio::io_service&, std::string type);
 
 ////////////////////////////////////////////////////////////////////////////////
 }
