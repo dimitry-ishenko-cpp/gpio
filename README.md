@@ -148,15 +148,14 @@ try
     auto chip = gpio::get_chip(io, argv[1]);
     auto pin = chip->pin(2);
 
-    std::cout << "Setting pin #" << pin->pos() << " mode to input" << std::endl;
+    std::cout << "Setting up pin #" << pin->pos() << " as input" << std::endl;
     pin->mode(gpio::digital_in);
 
     std::cout << "Monitoring pin:" << std::endl;
-
-    pin->on_state_on([]() { std::cout << "ON" << std::endl; });
-    pin->on_state_off([]() { std::cout << "OFF" << std::endl; });
-
-    pin->on_state_changed([](gpio::state s) { std::cout << "State=" << s << std::endl; });
+    pin->on_state_changed([](gpio::state s)
+    {
+        std::cout << "State=" << s << std::endl;
+    });
 
     io.run();
     return 0;
