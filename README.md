@@ -56,43 +56,67 @@ Example 1:
 #include <gpio++/gpio.hpp>
 
 #include <asio.hpp>
+#include <iostream>
+
+int main(int argc, char* argv[])
+{
+    asio::io_service io;
+
+    auto chip = gpio::get_chip(io, "gpiod:0");
+    std::cout << "Chip info:" << std::endl;
+    std::cout << "  type: " << chip->type() << std::endl;
+    std::cout << "    id: " << chip->id() << std::endl;
+    std::cout << "  name: " << chip->name() << std::endl;
+    std::cout << "  pins: " << chip->pin_count() << std::endl;
+    std::cout << std::endl;
+
+    for(std::size_t n = 0; n < chip->pin_count(); ++n)
+    {
+        auto pin = chip->pin(n);
+        std::cout << "Pin #" << pin->pos() << " info:" << std::endl;
+        std::cout << "  name: " << pin->name() << std::endl;
+        std::cout << "  mode: " << pin->mode();
+
+        std::cout << " [";
+        if(pin->is_digital()) std::cout << " digital";
+        if(pin->is_analog() ) std::cout << " analog";
+        if(pin->is_input()  ) std::cout << " input";
+        if(pin->is_output() ) std::cout << " output";
+        std::cout << " ]" << std::endl;
+
+        std::cout << std::endl;
+    }
+
+    return 0;
+}
+```
+
+Compile and run:
+```console
+$ g++ example1.cpp -o example1 -DASIO_STANDALONE -lgpio++ -ldl
+$ ./example1
+```
+
+Example 2:
+```cpp
+#include <gpio++/gpio.hpp>
+
+#include <asio.hpp>
 #include <chrono>
 #include <iostream>
-#include <stdexcept>
 #include <thread>
 
 using namespace std::chrono_literals;
 using namespace gpio::literals;
 
-int main(int argc, char* argv[])
-try
+int main()
 {
-    if(argc < 2)
-    {
-        std::cerr << "Usage: " << argv[0] << " <chip>" << std::endl;
-        throw std::invalid_argument("Missing <chip> argument");
-    }
-
     asio::io_service io;
-
-    auto chip = gpio::get_chip(io, argv[1]);
-    std::cout << "Chip info:" << std::endl;
-    std::cout << "    type: " << chip->type() << std::endl;
-    std::cout << "      id: " << chip->id() << std::endl;
-    std::cout << "    name: " << chip->name() << std::endl;
-    std::cout << "    pins: " << chip->pin_count() << std::endl;
-    std::cout << std::endl;
+    auto chip = gpio::get_chip(io, "gpiod:0");
 
     auto pin = chip->pin(2);
     pin->mode(gpio::pwm);
     pin->period(10ms);
-
-    std::cout << "Pin info:" << std::endl;
-    std::cout << "     pos: " << pin->pos() << std::endl;
-    std::cout << "    name: " << pin->name() << std::endl;
-    std::cout << "    mode: " << pin->mode() << std::endl;
-    std::cout << "  period: " << pin->period().count() << "ns" << std::endl;
-    std::cout << std::endl;
 
     std::cout << "Fading pin up and down" << std::endl;
     for(int n = 0; n < 10; ++n)
@@ -113,42 +137,27 @@ try
 
     return 0;
 }
-catch(std::exception& e)
-{
-    std::cerr << e.what() << std::endl;
-    return 1;
-}
 ```
 
 Compile and run:
 ```console
-$ g++ example1.cpp -o example1 -DASIO_STANDALONE -lgpio++ -ldl
-$ ./example1 gpiod:0
+$ g++ example2.cpp -o example2 -DASIO_STANDALONE -lgpio++ -ldl
+$ ./example2
 ```
 
-Example 2 (callback):
+Example 3 (callback):
 ```cpp
 #include <gpio++/gpio.hpp>
 
 #include <asio.hpp>
 #include <iostream>
-#include <stdexcept>
 
-int main(int argc, char* argv[])
-try
+int main()
 {
-    if(argc < 2)
-    {
-        std::cerr << "Usage: " << argv[0] << " <chip>" << std::endl;
-        throw std::invalid_argument("Missing <chip> argument");
-    }
-
     asio::io_service io;
+    auto chip = gpio::get_chip(io, "gpiod:0");
 
-    auto chip = gpio::get_chip(io, argv[1]);
     auto pin = chip->pin(2);
-
-    std::cout << "Setting up pin #" << pin->pos() << " as input" << std::endl;
     pin->mode(gpio::digital_in);
 
     std::cout << "Monitoring pin:" << std::endl;
@@ -160,17 +169,12 @@ try
     io.run();
     return 0;
 }
-catch(std::exception& e)
-{
-    std::cerr << e.what() << std::endl;
-    return 1;
-}
 ```
 
 Compile and run:
 ```console
-$ g++ example2.cpp -o example2 -DASIO_STANDALONE -lgpio++ -ldl
-$ ./example2 gpiod:0
+$ g++ example3.cpp -o example3 -DASIO_STANDALONE -lgpio++ -ldl
+$ ./example3
 ```
 
 ## Authors
