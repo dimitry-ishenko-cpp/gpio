@@ -26,7 +26,7 @@ using handle = void*;
 struct chip_deleter
 {
     gpio::handle handle = nullptr;
-    void operator()(chip*);
+    void operator()(gpio::chip*);
 };
 using unique_chip = std::unique_ptr<chip, chip_deleter>;
 

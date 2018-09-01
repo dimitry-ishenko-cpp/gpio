@@ -59,25 +59,25 @@ struct pin
 
     ////////////////////
     // digital
-    virtual void set(gpio::state = gpio::on) = 0;
+    virtual void set(gpio::state = on) = 0;
     virtual void reset() = 0;
     virtual gpio::state state() = 0;
 
     // pwm
-    virtual void period(gpio::nsec) = 0;
-    virtual gpio::nsec period() const noexcept = 0;
+    virtual void period(nsec) = 0;
+    virtual nsec period() const noexcept = 0;
 
-    virtual void set(gpio::nsec) = 0;
-    virtual gpio::nsec pulse() const noexcept = 0;
+    virtual void set(nsec) = 0;
+    virtual nsec pulse() const noexcept = 0;
 
-    virtual void set(gpio::percent) = 0;
-    virtual gpio::percent duty_cycle() const noexcept = 0;
+    virtual void set(percent) = 0;
+    virtual percent duty_cycle() const noexcept = 0;
 
     ////////////////////
     // digital callback
-    virtual void on_state_changed(gpio::state_changed) = 0;
-    virtual void on_state_on(gpio::state_on) = 0;
-    virtual void on_state_off(gpio::state_off) = 0;
+    virtual void on_state_changed(state_changed) = 0;
+    virtual void on_state_on(state_on) = 0;
+    virtual void on_state_off(state_off) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

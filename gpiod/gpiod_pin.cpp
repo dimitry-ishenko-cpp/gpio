@@ -27,12 +27,13 @@ namespace gpio
 gpiod_pin::gpiod_pin(asio::io_service& io, gpiod_chip* chip, gpio::pos n) :
     pin_base(chip, n), fd_(io), buffer_(sizeof(gpioevent_data))
 {
-    modes_ = { gpio::digital_in, gpio::digital_out, gpio::pwm };
-    valid_ = { gpio::active_low, gpio::open_drain, gpio::open_source };
+    modes_ = { digital_in, digital_out, pwm };
+    valid_ = { active_low, open_drain, open_source };
 
     update();
 }
 
+////////////////////////////////////////////////////////////////////////////////
 gpiod_pin::~gpiod_pin() { detach(); }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -45,9 +46,9 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
     {
         switch(flag)
         {
-        case gpio::active_low : value |= GPIOHANDLE_REQUEST_ACTIVE_LOW ; break;
-        case gpio::open_drain : value |= GPIOHANDLE_REQUEST_OPEN_DRAIN ; break;
-        case gpio::open_source: value |= GPIOHANDLE_REQUEST_OPEN_SOURCE; break;
+        case active_low : value |= GPIOHANDLE_REQUEST_ACTIVE_LOW ; break;
+        case open_drain : value |= GPIOHANDLE_REQUEST_OPEN_DRAIN ; break;
+        case open_source: value |= GPIOHANDLE_REQUEST_OPEN_SOURCE; break;
         default:;
         }
         flags &= ~flag;
@@ -59,12 +60,12 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
 
     switch(mode)
     {
-    case gpio::digital_in:
+    case digital_in:
         mode_digital_in(value);
         break;
 
-    case gpio::digital_out:
-    case gpio::pwm:
+    case digital_out:
+    case pwm:
         mode_digital_out(value, state);
         break;
 
@@ -75,7 +76,7 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
     }
 
     update();
-    if(mode == gpio::pwm) pwm_start();
+    if(mode == pwm) pwm_start();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +98,7 @@ void gpiod_pin::set(gpio::state state)
         type_id(this) + ": Cannot set pin state - Detached instance"
     );
 
-    gpio::command<
+    command<
         gpiohandle_data,
         GPIOHANDLE_SET_LINE_VALUES_IOCTL
     > cmd = { };
@@ -118,7 +119,7 @@ gpio::state gpiod_pin::state()
         type_id(this) + ": Cannot get pin state - Detached instance"
     );
 
-    gpio::command<
+    command<
         gpiohandle_data,
         GPIOHANDLE_GET_LINE_VALUES_IOCTL
     > cmd = { };
@@ -133,7 +134,7 @@ gpio::state gpiod_pin::state()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::period(gpio::nsec period)
+void gpiod_pin::period(nsec period)
 {
     pin_base::period(period);
     high_ticks_ = pulse_.count();
@@ -141,7 +142,7 @@ void gpiod_pin::period(gpio::nsec period)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::set(gpio::nsec pulse)
+void gpiod_pin::set(nsec pulse)
 {
     pin_base::set(pulse);
     high_ticks_= pulse_.count();
@@ -151,7 +152,7 @@ void gpiod_pin::set(gpio::nsec pulse)
 ////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::update()
 {
-    gpio::command<
+    command<
         gpioline_info,
         GPIO_GET_LINEINFO_IOCTL
     > cmd = { };
@@ -165,12 +166,12 @@ void gpiod_pin::update()
     );
 
     name_ = cmd.get().name;
-    mode_ = cmd.get().flags & GPIOLINE_FLAG_IS_OUT ? gpio::digital_out : gpio::digital_in;
+    mode_ = cmd.get().flags & GPIOLINE_FLAG_IS_OUT ? digital_out : digital_in;
 
     flags_ = { };
-    if(cmd.get().flags & GPIOLINE_FLAG_ACTIVE_LOW ) flags_ |= gpio::active_low;
-    if(cmd.get().flags & GPIOLINE_FLAG_OPEN_DRAIN ) flags_ |= gpio::open_drain;
-    if(cmd.get().flags & GPIOLINE_FLAG_OPEN_SOURCE) flags_ |= gpio::open_source;
+    if(cmd.get().flags & GPIOLINE_FLAG_ACTIVE_LOW ) flags_ |= active_low;
+    if(cmd.get().flags & GPIOLINE_FLAG_OPEN_DRAIN ) flags_ |= open_drain;
+    if(cmd.get().flags & GPIOLINE_FLAG_OPEN_SOURCE) flags_ |= open_source;
 
     used_ = cmd.get().flags & GPIOLINE_FLAG_KERNEL;
 }
@@ -178,7 +179,7 @@ void gpiod_pin::update()
 ////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::mode_digital_in(uint32_t flags)
 {
-    gpio::command<
+    command<
         gpioevent_request,
         GPIO_GET_LINEEVENT_IOCTL
     > cmd = { };
@@ -201,7 +202,7 @@ void gpiod_pin::mode_digital_in(uint32_t flags)
 ////////////////////////////////////////////////////////////////////////////////
 void gpiod_pin::mode_digital_out(uint32_t flags, gpio::state state)
 {
-    gpio::command<
+    command<
         gpiohandle_request,
         GPIO_GET_LINEHANDLE_IOCTL
     > cmd = { };
@@ -230,7 +231,7 @@ void gpiod_pin::sched_read()
             if(ec) return;
 
             auto ev = reinterpret_cast<gpioevent_data*>(buffer_.data());
-            auto state = ev->id == GPIOEVENT_EVENT_RISING_EDGE ? gpio::on : gpio::off;
+            auto state = ev->id == GPIOEVENT_EVENT_RISING_EDGE ? on : off;
 
             if(state_changed_) state_changed_(state);
             sched_read();
@@ -244,7 +245,7 @@ void gpiod_pin::pwm_start()
     stop_ = false;
     pwm_ = std::async(std::launch::async, [&]()
     {
-        gpio::command<
+        command<
             gpiohandle_data,
             GPIOHANDLE_SET_LINE_VALUES_IOCTL
         > cmd = { };
@@ -257,7 +258,7 @@ void gpiod_pin::pwm_start()
                 cmd.get().values[0] = true;
                 fd_.io_control(cmd, ec);
 
-                tp += gpio::nsec(high_ticks_);
+                tp += nsec(high_ticks_);
                 std::this_thread::sleep_until(tp);
             }
             if(stop_) break;
@@ -267,7 +268,7 @@ void gpiod_pin::pwm_start()
                 cmd.get().values[0] = false;
                 fd_.io_control(cmd, ec);
 
-                tp += gpio::nsec(low_ticks_);
+                tp += nsec(low_ticks_);
                 std::this_thread::sleep_until(tp);
             }
             if(stop_) break;

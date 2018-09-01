@@ -58,7 +58,7 @@ struct pin_base : public pin
 
     ////////////////////
     // virtual void detach() = 0;
-    // virtual bool detached() const noexcept = 0;
+    // virtual bool is_detached() const noexcept = 0;
 
     virtual bool is_used() const noexcept override { return used_; }
 
@@ -66,25 +66,25 @@ struct pin_base : public pin
     using pin::set;
 
     // digital
-    // virtual void set(gpio::state = gpio::on) = 0;
-    virtual void reset() override { set(gpio::off); }
+    // virtual void set(gpio::state = on) = 0;
+    virtual void reset() override { set(off); }
     // virtual gpio::state state() = 0;
 
     // pwm
-    virtual void period(gpio::nsec) override;
-    virtual gpio::nsec period() const noexcept override { return period_; }
+    virtual void period(nsec) override;
+    virtual nsec period() const noexcept override { return period_; }
 
-    virtual void set(gpio::nsec) override;
-    virtual gpio::nsec pulse() const noexcept override { return pulse_; }
+    virtual void set(nsec) override;
+    virtual nsec pulse() const noexcept override { return pulse_; }
 
-    virtual void set(gpio::percent) override;
-    virtual gpio::percent duty_cycle() const noexcept override;
+    virtual void set(percent) override;
+    virtual percent duty_cycle() const noexcept override;
 
     ////////////////////
     // digital callback
-    virtual void on_state_changed(gpio::state_changed) override;
-    virtual void on_state_on(gpio::state_on) override;
-    virtual void on_state_off(gpio::state_off) override;
+    virtual void on_state_changed(state_changed) override;
+    virtual void on_state_on(state_on) override;
+    virtual void on_state_off(state_off) override;
 
 protected:
     ////////////////////
@@ -93,16 +93,16 @@ protected:
     gpio::pos pos_;
     std::string name_;
 
-    gpio::mode mode_ = gpio::detached;
+    gpio::mode mode_ = detached;
     gpio::flag flags_ { };
     bool used_ = false;
 
     std::set<gpio::mode> modes_;
     std::set<gpio::flag> valid_;
 
-    gpio::nsec period_ { 100'000'000 }, pulse_ { 0 };
+    nsec period_ { 100'000'000 }, pulse_ { 0 };
 
-    gpio::state_changed state_changed_;
+    state_changed state_changed_;
 
     ////////////////////
     pin_base(gpio::chip*, gpio::pos) noexcept;

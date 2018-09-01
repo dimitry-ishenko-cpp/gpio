@@ -94,17 +94,17 @@ namespace literals
 
 constexpr inline
 auto operator""_pc(long double pc) noexcept
-{ return static_cast<gpio::percent>(pc); }
+{ return static_cast<percent>(pc); }
 
 constexpr inline
 auto operator""_pc(unsigned long long pc) noexcept
-{ return static_cast<gpio::percent>(pc); }
+{ return static_cast<percent>(pc); }
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // digital callback
-using state_changed = std::function<void(gpio::state)>;
+using state_changed = std::function<void(state)>;
 using state_on = std::function<void()>;
 using state_off = std::function<void()>;
 

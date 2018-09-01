@@ -40,7 +40,7 @@ gpiod_chip::gpiod_chip(asio::io_service& io, std::string id) :
         type_id(this) + ": Error opening file " + path + " - " + ec.message()
     );
 
-    gpio::command<
+    command<
         gpiochip_info,
         GPIO_GET_CHIPINFO_IOCTL
     > cmd = { };

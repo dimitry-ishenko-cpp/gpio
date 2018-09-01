@@ -36,7 +36,7 @@ public:
     ////////////////////
     virtual void mode(gpio::mode, gpio::flag, gpio::state) override;
     virtual gpio::mode mode() const noexcept override
-    { return pwm_started() ? gpio::pwm : mode_; }
+    { return pwm_started() ? pwm : mode_; }
 
     virtual void detach() override;
     virtual bool is_detached() const noexcept override { return !fd_.is_open(); }
@@ -44,11 +44,11 @@ public:
     ////////////////////
     using pin_base::set;
 
-    virtual void set(gpio::state = gpio::on) override;
+    virtual void set(gpio::state = on) override;
     virtual gpio::state state() override;
 
-    virtual void period(gpio::nsec) override;
-    virtual void set(gpio::nsec) override;
+    virtual void period(nsec) override;
+    virtual void set(nsec) override;
 
 private:
     ////////////////////
@@ -62,7 +62,7 @@ private:
     void sched_read();
 
     ////////////////////
-    using ticks = gpio::nsec::rep;
+    using ticks = nsec::rep;
     std::atomic<ticks> high_ticks_ { pulse_.count() };
     std::atomic<ticks> low_ticks_ { period_.count() - high_ticks_ };
 
