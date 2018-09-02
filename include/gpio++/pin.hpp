@@ -73,11 +73,21 @@ struct pin
     virtual void duty_cycle(percent) = 0;
     virtual percent duty_cycle() const noexcept = 0;
 
+    // analog
+    virtual void value(gpio::value) = 0;
+    virtual gpio::value value() = 0;
+
+    virtual gpio::value min_value() const noexcept = 0;
+    virtual gpio::value max_value() const noexcept = 0;
+
     ////////////////////
     // digital callback
     virtual cid on_state_changed(state_changed) = 0;
     virtual cid on_state_on(state_on) = 0;
     virtual cid on_state_off(state_off) = 0;
+
+    // analog callback
+    virtual cid on_value_changed(value_changed) = 0;
 
     virtual bool remove(cid) = 0;
 };

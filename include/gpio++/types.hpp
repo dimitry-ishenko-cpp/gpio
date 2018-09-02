@@ -104,6 +104,10 @@ auto operator""_pc(unsigned long long pc) noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// analog value
+using value = int;
+
+////////////////////////////////////////////////////////////////////////////////
 // call id
 using cid = std::tuple<int, int>;
 
@@ -114,6 +118,9 @@ inline cid operator++(cid& id, int) { cid prev = id; ++std::get<1>(id); return p
 using state_changed = std::function<void(state)>;
 using state_on = std::function<void()>;
 using state_off = std::function<void()>;
+
+// analog callback
+using value_changed = std::function<void(value)>;
 
 ////////////////////////////////////////////////////////////////////////////////
 }

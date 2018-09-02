@@ -79,11 +79,23 @@ struct pin_base : public pin
     virtual void duty_cycle(percent) override;
     virtual percent duty_cycle() const noexcept override;
 
+    // analog
+    virtual void value(gpio::value) override;
+    virtual gpio::value value() override
+    { return static_cast<gpio::value>(pulse_.count()); }
+
+    virtual int min_value() const noexcept override { return 0; }
+    virtual int max_value() const noexcept override
+    { return static_cast<gpio::value>(period_.count()); }
+
     ////////////////////
     // digital callback
     virtual cid on_state_changed(state_changed) override;
     virtual cid on_state_on(state_on) override;
     virtual cid on_state_off(state_off) override;
+
+    // analog callback
+    virtual cid on_value_changed(value_changed) override;
 
     virtual bool remove(cid) override;
 
@@ -104,6 +116,7 @@ protected:
     nsec period_ { 100'000'000 }, pulse_ { 0 };
 
     call_chain<state_changed> state_changed_;
+    call_chain<value_changed> value_changed_;
 
     ////////////////////
     pin_base(gpio::chip*, gpio::pos) noexcept;
