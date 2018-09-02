@@ -67,10 +67,10 @@ struct pin
     virtual void period(nsec) = 0;
     virtual nsec period() const noexcept = 0;
 
-    virtual void set(nsec) = 0;
+    virtual void pulse(nsec) = 0;
     virtual nsec pulse() const noexcept = 0;
 
-    virtual void set(percent) = 0;
+    virtual void duty_cycle(percent) = 0;
     virtual percent duty_cycle() const noexcept = 0;
 
     ////////////////////

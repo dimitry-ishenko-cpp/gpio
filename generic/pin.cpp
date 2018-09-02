@@ -100,10 +100,7 @@ void pin::set(gpio::state state)
         type_id(this) + ": Cannot set pin state - Detached instance"
     );
 
-    io_cmd<
-        gpiohandle_data,
-        GPIOHANDLE_SET_LINE_VALUES_IOCTL
-    > cmd = { };
+    io_cmd<gpiohandle_data, GPIOHANDLE_SET_LINE_VALUES_IOCTL> cmd = { };
     asio::error_code ec;
 
     cmd.get().values[0] = state;
@@ -121,10 +118,7 @@ gpio::state pin::state()
         type_id(this) + ": Cannot get pin state - Detached instance"
     );
 
-    io_cmd<
-        gpiohandle_data,
-        GPIOHANDLE_GET_LINE_VALUES_IOCTL
-    > cmd = { };
+    io_cmd<gpiohandle_data, GPIOHANDLE_GET_LINE_VALUES_IOCTL> cmd = { };
     asio::error_code ec;
 
     fd_.io_control(cmd, ec);
@@ -144,9 +138,9 @@ void pin::period(nsec period)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void pin::set(nsec pulse)
+void pin::pulse(nsec pulse)
 {
-    pin_base::set(pulse);
+    pin_base::pulse(pulse);
     high_ticks_= pulse_.count();
     low_ticks_ = (period_ - pulse_).count();
 }
@@ -154,10 +148,7 @@ void pin::set(nsec pulse)
 ////////////////////////////////////////////////////////////////////////////////
 void pin::update()
 {
-    io_cmd<
-        gpioline_info,
-        GPIO_GET_LINEINFO_IOCTL
-    > cmd = { };
+    io_cmd<gpioline_info, GPIO_GET_LINEINFO_IOCTL> cmd = { };
     asio::error_code ec;
 
     cmd.get().line_offset = static_cast<__u32>(pos_);
@@ -181,10 +172,7 @@ void pin::update()
 ////////////////////////////////////////////////////////////////////////////////
 void pin::mode_digital_in(uint32_t flags)
 {
-    io_cmd<
-        gpioevent_request,
-        GPIO_GET_LINEEVENT_IOCTL
-    > cmd = { };
+    io_cmd<gpioevent_request, GPIO_GET_LINEEVENT_IOCTL> cmd = { };
     asio::error_code ec;
 
     cmd.get().lineoffset  = static_cast<__u32>(pos_);
@@ -204,10 +192,7 @@ void pin::mode_digital_in(uint32_t flags)
 ////////////////////////////////////////////////////////////////////////////////
 void pin::mode_digital_out(uint32_t flags, gpio::state state)
 {
-    io_cmd<
-        gpiohandle_request,
-        GPIO_GET_LINEHANDLE_IOCTL
-    > cmd = { };
+    io_cmd<gpiohandle_request, GPIO_GET_LINEHANDLE_IOCTL> cmd = { };
     asio::error_code ec;
 
     cmd.get().lineoffsets[0]    = static_cast<__u32>(pos_);
@@ -247,10 +232,7 @@ void pin::pwm_start()
     stop_ = false;
     pwm_ = std::async(std::launch::async, [&]()
     {
-        io_cmd<
-            gpiohandle_data,
-            GPIOHANDLE_SET_LINE_VALUES_IOCTL
-        > cmd = { };
+        io_cmd<gpiohandle_data, GPIOHANDLE_SET_LINE_VALUES_IOCTL> cmd = { };
         asio::error_code ec;
 
         for(auto tp = std::chrono::high_resolution_clock::now();;)

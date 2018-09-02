@@ -44,13 +44,11 @@ public:
     virtual bool is_detached() const noexcept override { return !fd_.is_open(); }
 
     ////////////////////
-    using pin_base::set;
-
     virtual void set(gpio::state = on) override;
     virtual gpio::state state() override;
 
     virtual void period(nsec) override;
-    virtual void set(nsec) override;
+    virtual void pulse(nsec) override;
 
 private:
     ////////////////////

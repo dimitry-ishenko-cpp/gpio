@@ -123,13 +123,13 @@ int main()
     {
         for(auto pc = 0_pc; pc < 100_pc; pc += 1)
         {
-            pin->set(pc);
+            pin->duty_cycle(pc);
             std::this_thread::sleep_for(30ms);
         }
 
         for(auto time = 10ms; time > 0ms; time -= 1ms)
         {
-            pin->set(time);
+            pin->pulse(time);
             std::this_thread::sleep_for(30ms);
         }
     }
