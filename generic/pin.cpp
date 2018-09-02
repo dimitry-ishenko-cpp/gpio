@@ -31,6 +31,7 @@ pin::pin(asio::io_service& io, generic::chip* chip, gpio::pos n) :
 {
     modes_ = { digital_in, digital_out, pwm };
     valid_ = { active_low, open_drain, open_source };
+    set_ticks();
 
     update();
 }
@@ -130,20 +131,8 @@ gpio::state pin::state()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void pin::period(nsec period)
-{
-    pin_base::period(period);
-    high_ticks_ = pulse_.count();
-    low_ticks_ = (period_ - pulse_).count();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void pin::pulse(nsec pulse)
-{
-    pin_base::pulse(pulse);
-    high_ticks_= pulse_.count();
-    low_ticks_ = (period_ - pulse_).count();
-}
+void pin::period(nsec period) { pin_base::period(period); set_ticks(); }
+void pin::pulse(nsec pulse) { pin_base::pulse(pulse); set_ticks(); }
 
 ////////////////////////////////////////////////////////////////////////////////
 void pin::update()
@@ -224,6 +213,13 @@ void pin::sched_read()
             sched_read();
         }
     );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void pin::set_ticks()
+{
+    high_ticks_= pulse_.count();
+    low_ticks_ = (period_ - pulse_).count();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -63,8 +63,8 @@ private:
 
     ////////////////////
     using ticks = nsec::rep;
-    std::atomic<ticks> high_ticks_ { pulse_.count() };
-    std::atomic<ticks> low_ticks_ { period_.count() - high_ticks_ };
+    std::atomic<ticks> high_ticks_, low_ticks_;
+    void set_ticks();
 
     std::future<void> pwm_;
     std::atomic<bool> stop_ { false };
