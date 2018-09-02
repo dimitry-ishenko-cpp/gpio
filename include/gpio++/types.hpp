@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
+#include <tuple>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -103,6 +104,12 @@ auto operator""_pc(unsigned long long pc) noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// call id
+using cid = std::tuple<int, int>;
+
+inline cid& operator++(cid& id) { ++std::get<1>(id); return id; }
+inline cid operator++(cid& id, int) { cid prev = id; ++std::get<1>(id); return prev; }
+
 // digital callback
 using state_changed = std::function<void(state)>;
 using state_on = std::function<void()>;

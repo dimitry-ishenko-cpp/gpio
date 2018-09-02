@@ -75,9 +75,11 @@ struct pin
 
     ////////////////////
     // digital callback
-    virtual void on_state_changed(state_changed) = 0;
-    virtual void on_state_on(state_on) = 0;
-    virtual void on_state_off(state_off) = 0;
+    virtual cid on_state_changed(state_changed) = 0;
+    virtual cid on_state_on(state_on) = 0;
+    virtual cid on_state_off(state_off) = 0;
+
+    virtual bool remove(cid) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

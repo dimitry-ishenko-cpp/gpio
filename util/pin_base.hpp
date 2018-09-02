@@ -9,6 +9,7 @@
 #define GPIO_PIN_BASE_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
+#include <gpio++/call_chain.hpp>
 #include <gpio++/pin.hpp>
 
 #include <set>
@@ -80,9 +81,11 @@ struct pin_base : public pin
 
     ////////////////////
     // digital callback
-    virtual void on_state_changed(state_changed) override;
-    virtual void on_state_on(state_on) override;
-    virtual void on_state_off(state_off) override;
+    virtual cid on_state_changed(state_changed) override;
+    virtual cid on_state_on(state_on) override;
+    virtual cid on_state_off(state_off) override;
+
+    virtual bool remove(cid) override;
 
 protected:
     ////////////////////
@@ -100,7 +103,7 @@ protected:
 
     nsec period_ { 100'000'000 }, pulse_ { 0 };
 
-    state_changed state_changed_;
+    call_chain<state_changed> state_changed_;
 
     ////////////////////
     pin_base(gpio::chip*, gpio::pos) noexcept;

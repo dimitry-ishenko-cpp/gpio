@@ -10,8 +10,9 @@ add_definitions(-DASIO_STANDALONE)
 include_directories(include)
 
 set(HEADERS
-    include/gpio++/gpio.hpp
+    include/gpio++/call_chain.hpp
     include/gpio++/chip.hpp
+    include/gpio++/gpio.hpp
     include/gpio++/pin.hpp
     include/gpio++/types.hpp
 )

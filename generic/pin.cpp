@@ -220,7 +220,7 @@ void pin::sched_read()
             auto ev = reinterpret_cast<gpioevent_data*>(buffer_.data());
             auto state = ev->id == GPIOEVENT_EVENT_RISING_EDGE ? on : off;
 
-            if(state_changed_) state_changed_(state);
+            state_changed_(state);
             sched_read();
         }
     );
