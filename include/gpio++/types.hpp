@@ -20,6 +20,10 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
+namespace literals { }
+using namespace literals;
+
+////////////////////////////////////////////////////////////////////////////////
 // pin #
 using pos = std::size_t;
 
@@ -27,6 +31,9 @@ using pos = std::size_t;
 constexpr pos npos = static_cast<pos>(-1);
 
 ////////////////////////////////////////////////////////////////////////////////
+namespace literals
+{
+
 // pin mode
 enum mode
 {
@@ -44,7 +51,12 @@ constexpr auto analog_modes = { analog_in, analog_out };
 constexpr auto input_modes = { digital_in, analog_in };
 constexpr auto output_modes = { digital_out, analog_out, pwm };
 
+}
+
 ////////////////////////////////////////////////////////////////////////////////
+namespace literals
+{
+
 // pin mode flag
 enum flag
 {
@@ -77,12 +89,16 @@ flag& operator&=(flag& x, flag y) noexcept { return x = x & y; }
 inline constexpr
 flag operator~(flag x) noexcept { return static_cast<flag>(~static_cast<int>(x)); }
 
-////////////////////////////////////////////////////////////////////////////////
-// digital pin state
-using state = bool;
+}
 
-static constexpr state on = true;
-static constexpr state off = false;
+////////////////////////////////////////////////////////////////////////////////
+namespace literals
+{
+
+// digital pin state
+enum state : bool { on = true, off = false };
+
+}
 
 // pwm pin period & pulse
 using nsec = std::chrono::nanoseconds;

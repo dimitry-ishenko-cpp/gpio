@@ -127,7 +127,7 @@ gpio::state pin::state()
         type_id(this) + ": Cannot get pin state - " + ec.message()
     );
 
-    return cmd.get().values[0];
+    return cmd.get().values[0] ? on : off;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
