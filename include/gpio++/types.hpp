@@ -102,6 +102,7 @@ enum state : bool { on = true, off = false };
 
 // pwm pin period & pulse
 using nsec = std::chrono::nanoseconds;
+namespace literals { using namespace std::chrono_literals; }
 
 // pwm pin duty cycle
 using percent = double;
