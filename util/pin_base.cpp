@@ -45,14 +45,12 @@ inline bool pin_base::is_output() const noexcept { return find(output_modes, mod
 ////////////////////////////////////////////////////////////////////////////////
 void pin_base::period(nsec period)
 {
-    using namespace std::chrono_literals;
     period_ = std::max(period, 1ns);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void pin_base::pulse(nsec pulse)
 {
-    using namespace std::chrono_literals;
     pulse_ = std::min(std::max(pulse, 0ns), period_);
 }
 

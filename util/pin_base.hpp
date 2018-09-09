@@ -113,7 +113,7 @@ protected:
     std::set<gpio::mode> modes_;
     std::set<gpio::flag> valid_;
 
-    nsec period_ { 100'000'000 }, pulse_ { 0 };
+    nsec period_ = 100ms, pulse_ = 0ns;
 
     call_chain<state_changed> state_changed_;
     call_chain<value_changed> value_changed_;
