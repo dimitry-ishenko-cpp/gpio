@@ -20,14 +20,14 @@ Binary (Debian/Ubuntu/etc):
 ```console
 $ version=1.0
 $ arch=$(uname -p)
-$ wget https://github.com/dimitry-ishenko/gpio/releases/download/v${version}/gpio++_${version}_Linux_${arch}.deb
+$ wget https://github.com/dimitry-ishenko-cpp/gpio/releases/download/v${version}/gpio++_${version}_Linux_${arch}.deb
 $ sudo apt install ./gpio++_${version}_Linux_${arch}.deb
 ```
 
 Compile from source:
 ```console
 $ version=1.0
-$ wget https://github.com/dimitry-ishenko/gpio/releases/download/v${version}/gpio++-${version}-Source.zip
+$ wget https://github.com/dimitry-ishenko-cpp/gpio/releases/download/v${version}/gpio++-${version}-Source.zip
 $ unzip gpio++-${version}-Source.zip
 $ mkdir gpio++-${version}-Source/build
 $ cd gpio++-${version}-Source/build
@@ -38,7 +38,7 @@ $ sudo make install
 
 Clone and compile from repository:
 ```console
-$ git clone https://github.com/dimitry-ishenko/gpio.git gpio++
+$ git clone https://github.com/dimitry-ishenko-cpp/gpio.git gpio++
 $ mkdir gpio++/build
 $ cd gpio++/build
 $ cmake .. -DCMAKE_INSTALL_PREFIX=/usr
