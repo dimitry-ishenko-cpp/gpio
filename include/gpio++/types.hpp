@@ -13,7 +13,6 @@
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
-#include <tuple>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -126,10 +125,10 @@ using value = int;
 
 ////////////////////////////////////////////////////////////////////////////////
 // call id
-using cid = std::tuple<int, int>;
+using cid = unsigned;
 
-inline cid& operator++(cid& id) { ++std::get<1>(id); return id; }
-inline cid operator++(cid& id, int) { cid prev = id; ++std::get<1>(id); return prev; }
+// invalid/no call id
+constexpr cid ncid = static_cast<cid>(-1);
 
 // digital callback
 using state_changed = std::function<void(state)>;

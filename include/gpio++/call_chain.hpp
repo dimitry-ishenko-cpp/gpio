@@ -11,15 +11,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <gpio++/types.hpp>
 
+#include <atomic>
 #include <map>
+#include <type_traits>
 #include <utility>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
 {
-
-////////////////////////////////////////////////////////////////////////////////
-cid get_seed();
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Fn>
@@ -34,7 +33,7 @@ struct call_chain
     ////////////////////
     cid add(Fn fn)
     {
-        cid id = seed_++;
+        cid id = get_cid();
         chain_.emplace(id, std::move(fn));
         return id;
     }
@@ -42,20 +41,19 @@ struct call_chain
 
     template<typename... Args>
     void operator()(Args&&... args)
-    { for(auto const& fn : chain_) fn.second(std::forward<Args>(args)...); }
+    {
+        for(const auto& fn : chain_) fn.second(std::forward<Args>(args)...);
+    }
 
 private:
     ////////////////////
-    cid seed_ = get_seed();
+    static cid get_cid()
+    {
+        std::atomic<std::remove_const_t<cid>> seed { 0 };
+        return seed++;
+    }
     std::map<cid, Fn> chain_;
 };
-
-////////////////////////////////////////////////////////////////////////////////
-inline cid get_seed()
-{
-    static int seed = 0;
-    return cid(seed++, 0);
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 }
