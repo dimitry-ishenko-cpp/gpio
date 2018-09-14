@@ -27,8 +27,8 @@ struct call_chain
     ////////////////////
     call_chain() = default;
 
-    call_chain(const call_chain&) = delete;
-    call_chain& operator=(const call_chain&) = delete;
+    call_chain(call_chain&&) = default;
+    call_chain& operator=(call_chain&&) = default;
 
     ////////////////////
     cid add(Fn fn)
