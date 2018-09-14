@@ -30,11 +30,11 @@ $ sudo apt install ./gpio++_${version}_Linux_${arch}.deb
 Compile from source:
 ```console
 $ version=1.0
-$ wget https://github.com/dimitry-ishenko-cpp/gpio/releases/download/v${version}/gpio++-${version}-Source.zip
-$ unzip gpio++-${version}-Source.zip
+$ wget https://github.com/dimitry-ishenko-cpp/gpio/releases/download/v${version}/gpio++-${version}-Source.tar.bz2
+$ tar xjf gpio++-${version}-Source.tar.bz2
 $ mkdir gpio++-${version}-Source/build
 $ cd gpio++-${version}-Source/build
-$ cmake ..
+$ cmake .. -DCMAKE_INSTALL_PREFIX=/usr
 $ make
 $ sudo make install
 ```
