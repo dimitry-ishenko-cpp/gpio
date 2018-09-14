@@ -5,9 +5,9 @@
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "command.hpp"
-#include "gpiod_chip.hpp"
-#include "gpiod_pin.hpp"
+#include "io_cmd.hpp"
+#include "chip.hpp"
+#include "pin.hpp"
 #include "type_id.hpp"
 
 #include <stdexcept>
@@ -18,10 +18,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
 {
+namespace generic
+{
 
 ////////////////////////////////////////////////////////////////////////////////
-gpiod_chip::gpiod_chip(asio::io_service& io, std::string id) :
-    chip_base("gpiod"), fd_(io)
+chip::chip(asio::io_service& io, std::string id) :
+    chip_base("chip"), fd_(io)
 {
     if(id.find_first_not_of("0123456789") != std::string::npos
         || id.size() < 1 || id.size() > 3)
@@ -40,7 +42,7 @@ gpiod_chip::gpiod_chip(asio::io_service& io, std::string id) :
         type_id(this) + ": Error opening file " + path + " - " + ec.message()
     );
 
-    command<
+    io_cmd<
         gpiochip_info,
         GPIO_GET_CHIPINFO_IOCTL
     > cmd = { };
@@ -53,11 +55,11 @@ gpiod_chip::gpiod_chip(asio::io_service& io, std::string id) :
     name_ = cmd.get().label;
 
     for(gpio::pos n = 0; n < cmd.get().lines; ++n)
-        pins_.emplace_back(new gpiod_pin(io, this, n));
+        pins_.emplace_back(new generic::pin(io, this, n));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-gpiod_chip::~gpiod_chip()
+chip::~chip()
 {
     pins_.clear();
 
@@ -67,8 +69,9 @@ gpiod_chip::~gpiod_chip()
 
 ////////////////////////////////////////////////////////////////////////////////
 }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" gpio::chip* create_chip(asio::io_service& io, std::string id)
-{ return new gpio::gpiod_chip(io, std::move(id)); }
+{ return new gpio::generic::chip(io, std::move(id)); }
 extern "C" void delete_chip(gpio::chip* chip) { if(chip) delete chip; }

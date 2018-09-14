@@ -2,7 +2,7 @@
 
 The library is implemented as a "thin" layer provided by a static library called `libgpio++.a` and a number of backends provided by dynamic libraries, which can be loaded at runtime.
 
-The default backend provided by `libgpio++-gpiod.so` uses [new GPIO API](https://github.com/torvalds/linux/blob/v4.8/include/uapi/linux/gpio.h) introduced in the Linux v4.8. This backend should work on any platform running kernel v4.8 or later. The backend has a few limitations, such as lack of pull-up/pull-down resistor control and no hardware PWM.
+The default backend provided by `libgpio++-chip.so` uses [new GPIO API](https://github.com/torvalds/linux/blob/v4.8/include/uapi/linux/gpio.h) introduced in the Linux v4.8. This backend should work on any platform running kernel v4.8 or later. The backend has a few limitations, such as lack of pull-up/pull-down resistor control and no hardware PWM.
 
 Chip-specific backends can provide additional functionality supported by the given chip.
 
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 {
     asio::io_service io;
 
-    auto chip = gpio::get_chip(io, "gpiod:0");
+    auto chip = gpio::get_chip(io, "chip:0");
     std::cout << "Chip info:" << std::endl;
     std::cout << "  type: " << chip->type() << std::endl;
     std::cout << "    id: " << chip->id() << std::endl;
@@ -112,7 +112,7 @@ using namespace gpio::literals;
 int main()
 {
     asio::io_service io;
-    auto chip = gpio::get_chip(io, "gpiod:0");
+    auto chip = gpio::get_chip(io, "chip:0");
 
     auto pin = chip->pin(2);
     pin->mode(gpio::pwm);
@@ -155,7 +155,7 @@ Example 3 (callback):
 int main()
 {
     asio::io_service io;
-    auto chip = gpio::get_chip(io, "gpiod:0");
+    auto chip = gpio::get_chip(io, "chip:0");
 
     auto pin = chip->pin(2);
     pin->mode(gpio::digital_in);

@@ -22,10 +22,10 @@ set(FILES LICENSE.md README.md)
 add_subdirectory(util)
 set_property(TARGET gpio++-util PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-option(BUILD_GPIOD "Build gpiod backend" ON)
-if(BUILD_GPIOD)
-    add_subdirectory(gpiod)
-endif(BUILD_GPIOD)
+option(BUILD_CHIP "Build generic chip backend" ON)
+if(BUILD_CHIP)
+    add_subdirectory(generic)
+endif(BUILD_CHIP)
 
 ########################
 # static library

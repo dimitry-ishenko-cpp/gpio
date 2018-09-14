@@ -5,9 +5,9 @@
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "command.hpp"
-#include "gpiod_chip.hpp"
-#include "gpiod_pin.hpp"
+#include "io_cmd.hpp"
+#include "chip.hpp"
+#include "pin.hpp"
 #include "type_id.hpp"
 
 #include <asio.hpp>
@@ -22,9 +22,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
 {
+namespace generic
+{
 
 ////////////////////////////////////////////////////////////////////////////////
-gpiod_pin::gpiod_pin(asio::io_service& io, gpiod_chip* chip, gpio::pos n) :
+pin::pin(asio::io_service& io, generic::chip* chip, gpio::pos n) :
     pin_base(chip, n), fd_(io), buffer_(sizeof(gpioevent_data))
 {
     modes_ = { digital_in, digital_out, pwm };
@@ -34,10 +36,10 @@ gpiod_pin::gpiod_pin(asio::io_service& io, gpiod_chip* chip, gpio::pos n) :
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-gpiod_pin::~gpiod_pin() { detach(); }
+pin::~pin() { detach(); }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
+void pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
 {
     detach();
 
@@ -80,7 +82,7 @@ void gpiod_pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::detach()
+void pin::detach()
 {
     if(!is_detached())
     {
@@ -92,13 +94,13 @@ void gpiod_pin::detach()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::set(gpio::state state)
+void pin::set(gpio::state state)
 {
     if(is_detached()) throw std::logic_error(
         type_id(this) + ": Cannot set pin state - Detached instance"
     );
 
-    command<
+    io_cmd<
         gpiohandle_data,
         GPIOHANDLE_SET_LINE_VALUES_IOCTL
     > cmd = { };
@@ -113,13 +115,13 @@ void gpiod_pin::set(gpio::state state)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-gpio::state gpiod_pin::state()
+gpio::state pin::state()
 {
     if(is_detached()) throw std::logic_error(
         type_id(this) + ": Cannot get pin state - Detached instance"
     );
 
-    command<
+    io_cmd<
         gpiohandle_data,
         GPIOHANDLE_GET_LINE_VALUES_IOCTL
     > cmd = { };
@@ -134,7 +136,7 @@ gpio::state gpiod_pin::state()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::period(nsec period)
+void pin::period(nsec period)
 {
     pin_base::period(period);
     high_ticks_ = pulse_.count();
@@ -142,7 +144,7 @@ void gpiod_pin::period(nsec period)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::set(nsec pulse)
+void pin::set(nsec pulse)
 {
     pin_base::set(pulse);
     high_ticks_= pulse_.count();
@@ -150,9 +152,9 @@ void gpiod_pin::set(nsec pulse)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::update()
+void pin::update()
 {
-    command<
+    io_cmd<
         gpioline_info,
         GPIO_GET_LINEINFO_IOCTL
     > cmd = { };
@@ -160,7 +162,7 @@ void gpiod_pin::update()
 
     cmd.get().line_offset = static_cast<__u32>(pos_);
 
-    static_cast<gpiod_chip*>(chip_)->fd_.io_control(cmd, ec);
+    static_cast<generic::chip*>(chip_)->fd_.io_control(cmd, ec);
     if(ec) throw std::runtime_error(
         type_id(this) + ": Cannot get pin info - " + ec.message()
     );
@@ -177,9 +179,9 @@ void gpiod_pin::update()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::mode_digital_in(uint32_t flags)
+void pin::mode_digital_in(uint32_t flags)
 {
-    command<
+    io_cmd<
         gpioevent_request,
         GPIO_GET_LINEEVENT_IOCTL
     > cmd = { };
@@ -190,7 +192,7 @@ void gpiod_pin::mode_digital_in(uint32_t flags)
     cmd.get().eventflags  = GPIOEVENT_REQUEST_BOTH_EDGES;
     std::strcpy(cmd.get().consumer_label, type_id(this).data());
 
-    static_cast<gpiod_chip*>(chip_)->fd_.io_control(cmd, ec);
+    static_cast<generic::chip*>(chip_)->fd_.io_control(cmd, ec);
     if(ec) throw std::runtime_error(
         type_id(this) + ": Cannot set pin mode - " + ec.message()
     );
@@ -200,9 +202,9 @@ void gpiod_pin::mode_digital_in(uint32_t flags)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::mode_digital_out(uint32_t flags, gpio::state state)
+void pin::mode_digital_out(uint32_t flags, gpio::state state)
 {
-    command<
+    io_cmd<
         gpiohandle_request,
         GPIO_GET_LINEHANDLE_IOCTL
     > cmd = { };
@@ -214,7 +216,7 @@ void gpiod_pin::mode_digital_out(uint32_t flags, gpio::state state)
     std::strcpy(cmd.get().consumer_label, type_id(this).data());
     cmd.get().lines = 1;
 
-    static_cast<gpiod_chip*>(chip_)->fd_.io_control(cmd, ec);
+    static_cast<generic::chip*>(chip_)->fd_.io_control(cmd, ec);
     if(ec) throw std::runtime_error(
         type_id(this) + ": Cannot set pin mode - " + ec.message()
     );
@@ -223,7 +225,7 @@ void gpiod_pin::mode_digital_out(uint32_t flags, gpio::state state)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::sched_read()
+void pin::sched_read()
 {
     asio::async_read(fd_, asio::buffer(buffer_),
         [&](const asio::error_code& ec, std::size_t)
@@ -240,12 +242,12 @@ void gpiod_pin::sched_read()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::pwm_start()
+void pin::pwm_start()
 {
     stop_ = false;
     pwm_ = std::async(std::launch::async, [&]()
     {
-        command<
+        io_cmd<
             gpiohandle_data,
             GPIOHANDLE_SET_LINE_VALUES_IOCTL
         > cmd = { };
@@ -277,11 +279,12 @@ void gpiod_pin::pwm_start()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void gpiod_pin::pwm_stop()
+void pin::pwm_stop()
 {
     stop_ = true;
     pwm_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+}
 }
