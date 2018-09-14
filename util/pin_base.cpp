@@ -71,13 +71,13 @@ percent pin_base::duty_cycle() const noexcept
 void pin_base::value(gpio::value n) { pulse(nsec(n)); }
 
 ////////////////////////////////////////////////////////////////////////////////
-cid pin_base::on_state_changed(state_changed fn)
+cid pin_base::on_state_changed(fn_state_changed fn)
 {
     return state_changed_.add(std::move(fn));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-cid pin_base::on_state_on(state_on fn)
+cid pin_base::on_state_on(fn_state_on fn)
 {
     return on_state_changed(
         [fn_ = std::move(fn)](gpio::state state)
@@ -86,7 +86,7 @@ cid pin_base::on_state_on(state_on fn)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-cid pin_base::on_state_off(state_off fn)
+cid pin_base::on_state_off(fn_state_off fn)
 {
     return on_state_changed(
         [fn_ = std::move(fn)](gpio::state state)
@@ -95,7 +95,7 @@ cid pin_base::on_state_off(state_off fn)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-cid pin_base::on_value_changed(value_changed fn)
+cid pin_base::on_value_changed(fn_value_changed fn)
 {
     return value_changed_.add(std::move(fn));
 }

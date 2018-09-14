@@ -90,12 +90,12 @@ struct pin_base : public pin
 
     ////////////////////
     // digital callback
-    virtual cid on_state_changed(state_changed) override;
-    virtual cid on_state_on(state_on) override;
-    virtual cid on_state_off(state_off) override;
+    virtual cid on_state_changed(fn_state_changed) override;
+    virtual cid on_state_on(fn_state_on) override;
+    virtual cid on_state_off(fn_state_off) override;
 
     // analog callback
-    virtual cid on_value_changed(value_changed) override;
+    virtual cid on_value_changed(fn_value_changed) override;
 
     virtual bool remove(cid) override;
 
@@ -115,8 +115,8 @@ protected:
 
     nsec period_ = 100ms, pulse_ = 0ns;
 
-    call_chain<state_changed> state_changed_;
-    call_chain<value_changed> value_changed_;
+    call_chain<fn_state_changed> state_changed_;
+    call_chain<fn_value_changed> value_changed_;
 
     ////////////////////
     pin_base(gpio::chip*, gpio::pos) noexcept;

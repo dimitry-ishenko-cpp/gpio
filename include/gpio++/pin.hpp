@@ -82,12 +82,12 @@ struct pin
 
     ////////////////////
     // digital callback
-    virtual cid on_state_changed(state_changed) = 0;
-    virtual cid on_state_on(state_on) = 0;
-    virtual cid on_state_off(state_off) = 0;
+    virtual cid on_state_changed(fn_state_changed) = 0;
+    virtual cid on_state_on(fn_state_on) = 0;
+    virtual cid on_state_off(fn_state_off) = 0;
 
     // analog callback
-    virtual cid on_value_changed(value_changed) = 0;
+    virtual cid on_value_changed(fn_value_changed) = 0;
 
     virtual bool remove(cid) = 0;
 };

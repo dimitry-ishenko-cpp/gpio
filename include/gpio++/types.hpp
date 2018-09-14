@@ -171,12 +171,12 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 // digital callback
-using state_changed = std::function<void(state)>;
-using state_on = std::function<void()>;
-using state_off = std::function<void()>;
+using fn_state_changed = std::function<void(state)>;
+using fn_state_on = std::function<void()>;
+using fn_state_off = std::function<void()>;
 
 // analog callback
-using value_changed = std::function<void(value)>;
+using fn_value_changed = std::function<void(value)>;
 
 ////////////////////////////////////////////////////////////////////////////////
 }
