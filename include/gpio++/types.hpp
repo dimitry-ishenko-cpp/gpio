@@ -9,10 +9,14 @@
 #define GPIO_TYPES_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
+#include <atomic>
 #include <chrono>
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
+#include <map>
+#include <type_traits>
+#include <utility>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
@@ -130,6 +134,42 @@ using cid = unsigned;
 // invalid/no call id
 constexpr cid ncid = static_cast<cid>(-1);
 
+// callback chain
+template<typename Fn>
+struct call_chain
+{
+    ////////////////////
+    call_chain() = default;
+
+    call_chain(call_chain&&) = default;
+    call_chain& operator=(call_chain&&) = default;
+
+    ////////////////////
+    cid add(Fn fn)
+    {
+        cid id = get_cid();
+        chain_.emplace(id, std::move(fn));
+        return id;
+    }
+    bool remove(cid id) { return chain_.erase(id); }
+
+    template<typename... Args>
+    void operator()(Args&&... args)
+    {
+        for(const auto& fn : chain_) fn.second(std::forward<Args>(args)...);
+    }
+
+private:
+    ////////////////////
+    static cid get_cid()
+    {
+        std::atomic<std::remove_const_t<cid>> seed { 0 };
+        return seed++;
+    }
+    std::map<cid, Fn> chain_;
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // digital callback
 using state_changed = std::function<void(state)>;
 using state_on = std::function<void()>;

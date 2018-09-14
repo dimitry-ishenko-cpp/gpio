@@ -9,8 +9,8 @@
 #define GPIO_PIN_BASE_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
-#include <gpio++/call_chain.hpp>
 #include <gpio++/pin.hpp>
+#include <gpio++/types.hpp>
 
 #include <set>
 #include <string>
@@ -84,8 +84,8 @@ struct pin_base : public pin
     virtual gpio::value value() override
     { return static_cast<gpio::value>(pulse_.count()); }
 
-    virtual int min_value() const noexcept override { return 0; }
-    virtual int max_value() const noexcept override
+    virtual gpio::value min_value() const noexcept override { return 0; }
+    virtual gpio::value max_value() const noexcept override
     { return static_cast<gpio::value>(period_.count()); }
 
     ////////////////////
