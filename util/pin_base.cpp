@@ -57,14 +57,14 @@ void pin_base::pulse(nsec pulse)
 ////////////////////////////////////////////////////////////////////////////////
 void pin_base::duty_cycle(percent pc)
 {
-    pc = std::max(0.0, std::min(pc, 100.0));
-    pulse(nsec( static_cast<nsec::rep>(period_.count() * pc / 100.0 + 0.5) ));
+    pc = std::max(0_pc, std::min(pc, 100_pc));
+    pulse(nsec( static_cast<nsec::rep>(period_.count() * pc / 100_pc + 0.5) ));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 percent pin_base::duty_cycle() const noexcept
 {
-    return 100.0 * pulse_.count() / period_.count();
+    return 100_pc * pulse_.count() / period_.count();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
