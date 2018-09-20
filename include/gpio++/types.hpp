@@ -163,7 +163,7 @@ private:
     ////////////////////
     static cid get_cid()
     {
-        std::atomic<std::remove_const_t<cid>> seed { 0 };
+        static std::atomic<cid> seed { 0 };
         return seed++;
     }
     std::map<cid, Fn> chain_;
