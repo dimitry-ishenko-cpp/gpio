@@ -29,7 +29,7 @@ namespace generic
 pin::pin(asio::io_service& io, generic::chip* chip, gpio::pos n) :
     pin_base(chip, n), fd_(io), buffer_(sizeof(gpioevent_data))
 {
-    modes_ = { digital_in, digital_out, pwm };
+    modes_ = { in, out, pwm };
     valid_ = { active_low, open_drain, open_source };
     set_ticks();
 
@@ -63,11 +63,11 @@ void pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
 
     switch(mode)
     {
-    case digital_in:
+    case in:
         mode_digital_in(value);
         break;
 
-    case digital_out:
+    case out:
     case pwm:
         mode_digital_out(value, state);
         break;
@@ -148,7 +148,7 @@ void pin::update()
     );
 
     name_ = cmd.get().name;
-    mode_ = cmd.get().flags & GPIOLINE_FLAG_IS_OUT ? digital_out : digital_in;
+    mode_ = cmd.get().flags & GPIOLINE_FLAG_IS_OUT ? out : in;
 
     flags_ = { };
     if(cmd.get().flags & GPIOLINE_FLAG_ACTIVE_LOW ) flags_ |= active_low;

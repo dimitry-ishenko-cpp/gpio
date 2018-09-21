@@ -41,8 +41,8 @@ namespace literals
 enum mode
 {
     detached,
-    digital_in,
-    digital_out,
+    in,
+    out,
     pwm,
 };
 
@@ -55,14 +55,14 @@ namespace literals
 // pin mode flag
 enum flag
 {
-    // digital_in, digital_out
+    // in, out
     active_low  = 0x0001,
 
-    // digital_in
+    // in
     pull_up     = 0x0010,
     pull_down   = 0x0020,
 
-    // digital_out
+    // out
     open_drain  = 0x0100,
     open_source = 0x0200,
 };
