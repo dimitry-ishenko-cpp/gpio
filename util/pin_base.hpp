@@ -98,7 +98,7 @@ protected:
     std::set<gpio::mode> valid_modes_;
     std::set<gpio::flag> valid_flags_;
 
-    nsec period_ = 100ms, pulse_ = 0ns;
+    nsec period_ = 10ms, pulse_ = 0ns;
 
     call_chain<fn_state_changed> state_changed_;
 };
