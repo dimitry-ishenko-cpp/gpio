@@ -20,8 +20,11 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-struct pin_base : public pin
+class pin_base : public pin
 {
+public:
+    ////////////////////
+    pin_base(gpio::chip*, gpio::pos) noexcept;
     virtual ~pin_base() override;
 
     pin_base(const pin_base&) = delete;
@@ -37,11 +40,11 @@ struct pin_base : public pin
     virtual void mode(gpio::mode mode, gpio::flag flags, gpio::state) override
     { mode_ = mode; flags_ = flags; }
     virtual void mode(gpio::mode mode, gpio::flag flags) override
-    { this->mode(mode, flags, gpio::off); }
+    { this->mode(mode, flags, off); }
     virtual void mode(gpio::mode mode, gpio::state value) override
-    { this->mode(mode, gpio::flag(0), value); }
+    { this->mode(mode, gpio::flag { }, value); }
     virtual void mode(gpio::mode mode) override
-    { this->mode(mode, gpio::flag(0)); }
+    { this->mode(mode, gpio::flag { }); }
     virtual gpio::mode mode() const noexcept override { return mode_; }
 
     virtual bool is(gpio::flag flag) const noexcept override { return flags_ & flag; }
@@ -52,8 +55,8 @@ struct pin_base : public pin
     { return valid_flags_.count(flag); }
 
     ////////////////////
-    // virtual void detach() = 0;
-    // virtual bool is_detached() const noexcept = 0;
+    virtual void detach() override { }
+    virtual bool is_detached() const noexcept override { return true; }
 
     virtual bool is_used() const noexcept override { return used_; }
 
@@ -98,9 +101,6 @@ protected:
     nsec period_ = 100ms, pulse_ = 0ns;
 
     call_chain<fn_state_changed> state_changed_;
-
-    ////////////////////
-    pin_base(gpio::chip*, gpio::pos) noexcept;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
