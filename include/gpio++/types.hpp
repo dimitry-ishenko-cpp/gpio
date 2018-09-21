@@ -30,12 +30,12 @@ using namespace literals;
 // pin #
 using pos = std::size_t;
 
-// invalid pin #
-constexpr pos npos = static_cast<pos>(-1);
-
 ////////////////////////////////////////////////////////////////////////////////
 namespace literals
 {
+
+// invalid pin #
+constexpr pos npos = static_cast<pos>(-1);
 
 // pin mode
 enum mode
@@ -45,12 +45,6 @@ enum mode
     out,
     pwm,
 };
-
-}
-
-////////////////////////////////////////////////////////////////////////////////
-namespace literals
-{
 
 // pin mode flag
 enum flag
@@ -84,17 +78,12 @@ flag& operator&=(flag& x, flag y) noexcept { return x = x & y; }
 inline constexpr
 flag operator~(flag x) noexcept { return static_cast<flag>(~static_cast<int>(x)); }
 
-}
-
-////////////////////////////////////////////////////////////////////////////////
-namespace literals
-{
-
 // digital pin state
 enum state : bool { on = true, off = false };
 
 }
 
+////////////////////////////////////////////////////////////////////////////////
 // pwm pin period & pulse
 using nsec = std::chrono::nanoseconds;
 namespace literals { using namespace std::chrono_literals; }
@@ -125,8 +114,13 @@ using fn_state_off = std::function<void()>;
 // call id
 using cid = unsigned;
 
+namespace literals
+{
+
 // invalid/no call id
 constexpr cid ncid = static_cast<cid>(-1);
+
+}
 
 // callback chain
 template<typename Fn>
