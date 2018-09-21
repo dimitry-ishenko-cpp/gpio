@@ -47,9 +47,9 @@ struct pin_base : public pin
     virtual bool is(gpio::flag flag) const noexcept override { return flags_ & flag; }
 
     virtual bool supports(gpio::mode mode) const noexcept override
-    { return modes_.count(mode); }
+    { return valid_modes_.count(mode); }
     virtual bool supports(gpio::flag flag) const noexcept override
-    { return valid_.count(flag); }
+    { return valid_flags_.count(flag); }
 
     ////////////////////
     // virtual void detach() = 0;
@@ -92,8 +92,8 @@ protected:
     gpio::flag flags_ { };
     bool used_ = false;
 
-    std::set<gpio::mode> modes_;
-    std::set<gpio::flag> valid_;
+    std::set<gpio::mode> valid_modes_;
+    std::set<gpio::flag> valid_flags_;
 
     nsec period_ = 100ms, pulse_ = 0ns;
 

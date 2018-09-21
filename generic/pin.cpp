@@ -29,8 +29,8 @@ namespace generic
 pin::pin(asio::io_service& io, generic::chip* chip, gpio::pos n) :
     pin_base(chip, n), fd_(io), buffer_(sizeof(gpioevent_data))
 {
-    modes_ = { in, out, pwm };
-    valid_ = { active_low, open_drain, open_source };
+    valid_modes_ = { in, out, pwm };
+    valid_flags_ = { active_low, open_drain, open_source };
     set_ticks();
 
     update();
@@ -45,7 +45,7 @@ void pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
     detach();
 
     std::uint32_t value = 0;
-    for(auto flag: valid_) if(flag & flags)
+    for(auto flag: valid_flags_) if(flag & flags)
     {
         switch(flag)
         {
