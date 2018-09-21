@@ -59,9 +59,9 @@ struct pin_base : public pin
 
     ////////////////////
     // digital
-    // virtual void set(gpio::state = on) = 0;
+    virtual void set(gpio::state = on) override;
     virtual void reset() override { set(off); }
-    // virtual gpio::state state() = 0;
+    virtual gpio::state state() override;
 
     // pwm
     virtual void period(nsec) override;
