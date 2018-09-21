@@ -38,13 +38,7 @@ namespace literals
 constexpr pos npos = static_cast<pos>(-1);
 
 // pin mode
-enum mode
-{
-    detached,
-    in,
-    out,
-    pwm,
-};
+enum mode { detached, in, out };
 
 // pin mode flag
 enum flag

@@ -29,11 +29,10 @@ namespace generic
 pin::pin(asio::io_service& io, generic::chip* chip, gpio::pos n) :
     pin_base(chip, n), fd_(io), buffer_(sizeof(gpioevent_data))
 {
-    valid_modes_ = { in, out, pwm };
+    valid_modes_ = { in, out };
     valid_flags_ = { active_low, open_drain, open_source };
-    set_ticks();
 
-    update();
+    get_info();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -45,17 +44,18 @@ void pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
     detach();
 
     std::uint32_t value = 0;
-    for(auto flag: valid_flags_) if(flag & flags)
-    {
-        switch(flag)
+    for(auto flag: valid_flags_)
+        if(flag & flags)
         {
-        case active_low : value |= GPIOHANDLE_REQUEST_ACTIVE_LOW ; break;
-        case open_drain : value |= GPIOHANDLE_REQUEST_OPEN_DRAIN ; break;
-        case open_source: value |= GPIOHANDLE_REQUEST_OPEN_SOURCE; break;
-        default:;
+            switch(flag)
+            {
+            case active_low : value |= GPIOHANDLE_REQUEST_ACTIVE_LOW ; break;
+            case open_drain : value |= GPIOHANDLE_REQUEST_OPEN_DRAIN ; break;
+            case open_source: value |= GPIOHANDLE_REQUEST_OPEN_SOURCE; break;
+            default:;
+            }
+            flags &= ~flag;
         }
-        flags &= ~flag;
-    }
 
     if(flags) throw std::invalid_argument(
         type_id(this) + ": Cannot set pin mode - Invalid flag(s): " + std::to_string(flags)
@@ -64,12 +64,12 @@ void pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
     switch(mode)
     {
     case in:
-        mode_digital_in(value);
+        mode_in(value);
         break;
 
     case out:
-    case pwm:
-        mode_digital_out(value, state);
+        mode_out(value, state);
+        pin_base::set(state);
         break;
 
     default:
@@ -78,8 +78,7 @@ void pin::mode(gpio::mode mode, gpio::flag flags, gpio::state state)
         );
     }
 
-    update();
-    if(mode == pwm) pwm_start();
+    get_info();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,10 +86,10 @@ void pin::detach()
 {
     if(!is_detached())
     {
-        if(pwm_started()) pwm_stop();
+        pwm_stop();
 
         fd_.close();
-        update();
+        get_info();
     }
 }
 
@@ -101,15 +100,8 @@ void pin::set(gpio::state state)
         type_id(this) + ": Cannot set pin state - Detached instance"
     );
 
-    io_cmd<gpiohandle_data, GPIOHANDLE_SET_LINE_VALUES_IOCTL> cmd = { };
-    asio::error_code ec;
-
-    cmd.get().values[0] = state;
-
-    fd_.io_control(cmd, ec);
-    if(ec) throw std::runtime_error(
-        type_id(this) + ": Cannot set pin state - " + ec.message()
-    );
+    pin_base::set(state);
+    sync_state();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -131,11 +123,28 @@ gpio::state pin::state()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void pin::period(nsec period) { pin_base::period(period); set_ticks(); }
-void pin::pulse(nsec pulse) { pin_base::pulse(pulse); set_ticks(); }
+void pin::period(nsec period)
+{
+    if(is_detached()) throw std::logic_error(
+        type_id(this) + ": Cannot set pin period - Detached instance"
+    );
+
+    pin_base::period(period);
+    sync_state();
+}
+
+void pin::pulse(nsec pulse)
+{
+    if(is_detached()) throw std::logic_error(
+        type_id(this) + ": Cannot set pin pulse - Detached instance"
+    );
+
+    pin_base::pulse(pulse);
+    sync_state();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
-void pin::update()
+void pin::get_info()
 {
     io_cmd<gpioline_info, GPIO_GET_LINEINFO_IOCTL> cmd = { };
     asio::error_code ec;
@@ -159,7 +168,7 @@ void pin::update()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void pin::mode_digital_in(uint32_t flags)
+void pin::mode_in(uint32_t flags)
 {
     io_cmd<gpioevent_request, GPIO_GET_LINEEVENT_IOCTL> cmd = { };
     asio::error_code ec;
@@ -179,7 +188,7 @@ void pin::mode_digital_in(uint32_t flags)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void pin::mode_digital_out(uint32_t flags, gpio::state state)
+void pin::mode_out(uint32_t flags, gpio::state state)
 {
     io_cmd<gpiohandle_request, GPIO_GET_LINEHANDLE_IOCTL> cmd = { };
     asio::error_code ec;
@@ -196,6 +205,19 @@ void pin::mode_digital_out(uint32_t flags, gpio::state state)
     );
 
     fd_.assign(cmd.get().fd);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void pin::state(gpio::state state)
+{
+    io_cmd<gpiohandle_data, GPIOHANDLE_SET_LINE_VALUES_IOCTL> cmd = { };
+    asio::error_code ec;
+
+    cmd.get().values[0] = state;
+    fd_.io_control(cmd, ec);
+    if(ec) throw std::runtime_error(
+        type_id(this) + ": Cannot set pin state - " + ec.message()
+    );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -216,10 +238,28 @@ void pin::sched_read()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void pin::set_ticks()
+void pin::sync_state()
 {
-    high_ticks_= pulse_.count();
-    low_ticks_ = (period_ - pulse_).count();
+    if(pulse_ == period_)
+    {
+        // no need for pwm - set state directly
+        pwm_stop();
+        state(on);
+    }
+    else if(pulse_ == 0ns)
+    {
+        // no need for pwm - set state directly
+        pwm_stop();
+        state(off);
+    }
+    else
+    {
+        // start/update pwm
+        high_ticks_= pulse_.count();
+        low_ticks_ = (period_ - pulse_).count();
+
+        if(!pwm_started()) pwm_start();
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -228,29 +268,16 @@ void pin::pwm_start()
     stop_ = false;
     pwm_ = std::async(std::launch::async, [&]()
     {
-        io_cmd<gpiohandle_data, GPIOHANDLE_SET_LINE_VALUES_IOCTL> cmd = { };
-        asio::error_code ec;
-
         for(auto tp = std::chrono::high_resolution_clock::now();;)
         {
-            if(high_ticks_)
-            {
-                cmd.get().values[0] = true;
-                fd_.io_control(cmd, ec);
-
-                tp += nsec(high_ticks_);
-                std::this_thread::sleep_until(tp);
-            }
+            state(on);
+            tp += nsec(high_ticks_);
+            std::this_thread::sleep_until(tp);
             if(stop_) break;
 
-            if(low_ticks_)
-            {
-                cmd.get().values[0] = false;
-                fd_.io_control(cmd, ec);
-
-                tp += nsec(low_ticks_);
-                std::this_thread::sleep_until(tp);
-            }
+            state(off);
+            tp += nsec(low_ticks_);
+            std::this_thread::sleep_until(tp);
             if(stop_) break;
         }
     });
@@ -259,8 +286,11 @@ void pin::pwm_start()
 ////////////////////////////////////////////////////////////////////////////////
 void pin::pwm_stop()
 {
-    stop_ = true;
-    pwm_.get();
+    if(pwm_started())
+    {
+        stop_ = true;
+        pwm_.get();
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -37,8 +37,6 @@ public:
 
     ////////////////////
     virtual void mode(gpio::mode, gpio::flag, gpio::state) override;
-    virtual gpio::mode mode() const noexcept override
-    { return pwm_started() ? pwm : mode_; }
 
     virtual void detach() override;
     virtual bool is_detached() const noexcept override { return !fd_.is_open(); }
@@ -54,9 +52,10 @@ private:
     ////////////////////
     asio::posix::stream_descriptor fd_;
 
-    void update();
-    void mode_digital_in(std::uint32_t flags);
-    void mode_digital_out(std::uint32_t flags, gpio::state);
+    void get_info();
+    void mode_in(std::uint32_t flags);
+    void mode_out(std::uint32_t flags, gpio::state);
+    void state(gpio::state);
 
     std::vector<char> buffer_;
     void sched_read();
@@ -64,7 +63,7 @@ private:
     ////////////////////
     using ticks = nsec::rep;
     std::atomic<ticks> high_ticks_, low_ticks_;
-    void set_ticks();
+    void sync_state();
 
     std::future<void> pwm_;
     std::atomic<bool> stop_ { false };
