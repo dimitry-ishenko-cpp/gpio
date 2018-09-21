@@ -74,6 +74,14 @@ struct pin
     virtual cid on_state_off(fn_state_off) = 0;
 
     virtual bool remove(cid) = 0;
+
+    ////////////////////
+    template<typename... Args>
+    auto as(Args&&... args)
+    {
+        mode(std::forward<Args>(args)...);
+        return this;
+    }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
