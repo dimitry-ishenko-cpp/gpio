@@ -43,16 +43,8 @@ enum mode
     detached,
     digital_in,
     digital_out,
-    analog_in,
-    analog_out,
     pwm,
 };
-
-constexpr auto digital_modes = { digital_in, digital_out, pwm };
-constexpr auto analog_modes = { analog_in, analog_out };
-
-constexpr auto input_modes = { digital_in, analog_in };
-constexpr auto output_modes = { digital_out, analog_out, pwm };
 
 }
 
@@ -124,8 +116,10 @@ auto operator""_pc(unsigned long long pc) noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// analog value
-using value = int;
+// digital callback
+using fn_state_changed = std::function<void(state)>;
+using fn_state_on = std::function<void()>;
+using fn_state_off = std::function<void()>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // call id
@@ -168,15 +162,6 @@ private:
     }
     std::map<cid, Fn> chain_;
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// digital callback
-using fn_state_changed = std::function<void(state)>;
-using fn_state_on = std::function<void()>;
-using fn_state_off = std::function<void()>;
-
-// analog callback
-using fn_value_changed = std::function<void(value)>;
 
 ////////////////////////////////////////////////////////////////////////////////
 }

@@ -44,12 +44,6 @@ struct pin_base : public pin
     { this->mode(mode, gpio::flag(0)); }
     virtual gpio::mode mode() const noexcept override { return mode_; }
 
-    virtual bool is_digital() const noexcept override;
-    virtual bool is_analog() const noexcept override;
-
-    virtual bool is_input() const noexcept override;
-    virtual bool is_output() const noexcept override;
-
     virtual bool is(gpio::flag flag) const noexcept override { return flags_ & flag; }
 
     virtual bool supports(gpio::mode mode) const noexcept override
@@ -79,23 +73,11 @@ struct pin_base : public pin
     virtual void duty_cycle(percent) override;
     virtual percent duty_cycle() const noexcept override;
 
-    // analog
-    virtual void value(gpio::value) override;
-    virtual gpio::value value() override
-    { return static_cast<gpio::value>(pulse_.count()); }
-
-    virtual gpio::value min_value() const noexcept override { return 0; }
-    virtual gpio::value max_value() const noexcept override
-    { return static_cast<gpio::value>(period_.count()); }
-
     ////////////////////
     // digital callback
     virtual cid on_state_changed(fn_state_changed) override;
     virtual cid on_state_on(fn_state_on) override;
     virtual cid on_state_off(fn_state_off) override;
-
-    // analog callback
-    virtual cid on_value_changed(fn_value_changed) override;
 
     virtual bool remove(cid) override;
 
@@ -116,7 +98,6 @@ protected:
     nsec period_ = 100ms, pulse_ = 0ns;
 
     call_chain<fn_state_changed> state_changed_;
-    call_chain<fn_value_changed> value_changed_;
 
     ////////////////////
     pin_base(gpio::chip*, gpio::pos) noexcept;

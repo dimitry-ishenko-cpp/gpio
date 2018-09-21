@@ -39,12 +39,6 @@ struct pin
     virtual void mode(gpio::mode) = 0 ;
     virtual gpio::mode mode() const noexcept = 0;
 
-    virtual bool is_digital() const noexcept = 0;
-    virtual bool is_analog() const noexcept = 0;
-
-    virtual bool is_input() const noexcept = 0;
-    virtual bool is_output() const noexcept = 0;
-
     virtual bool is(gpio::flag) const noexcept = 0;
 
     virtual bool supports(gpio::mode) const noexcept = 0;
@@ -73,21 +67,11 @@ struct pin
     virtual void duty_cycle(percent) = 0;
     virtual percent duty_cycle() const noexcept = 0;
 
-    // analog
-    virtual void value(gpio::value) = 0;
-    virtual gpio::value value() = 0;
-
-    virtual gpio::value min_value() const noexcept = 0;
-    virtual gpio::value max_value() const noexcept = 0;
-
     ////////////////////
     // digital callback
     virtual cid on_state_changed(fn_state_changed) = 0;
     virtual cid on_state_on(fn_state_on) = 0;
     virtual cid on_state_off(fn_state_off) = 0;
-
-    // analog callback
-    virtual cid on_value_changed(fn_value_changed) = 0;
 
     virtual bool remove(cid) = 0;
 };
