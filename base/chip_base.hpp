@@ -22,8 +22,11 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-struct chip_base : public chip
+class chip_base : public chip
 {
+public:
+    ////////////////////
+    chip_base(std::string type) noexcept;
     virtual ~chip_base() override;
 
     chip_base(const chip_base&) = delete;
@@ -46,11 +49,9 @@ protected:
     std::string type_, id_;
     std::string name_;
 
-    using pin_ptr = std::unique_ptr<gpio::pin>;
-    std::vector<pin_ptr> pins_;
+    using unique_pin = std::unique_ptr<gpio::pin>;
+    std::vector<unique_pin> pins_;
 
-    ////////////////////
-    chip_base(std::string type) noexcept;
     void throw_range(gpio::pos) const;
 };
 
