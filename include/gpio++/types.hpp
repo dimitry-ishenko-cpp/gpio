@@ -23,6 +23,9 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
+// some common bits will be placed in the "literals" namespace,
+// so that the user can pull them into their scope without
+// pulling in the entire library
 namespace literals { }
 using namespace literals;
 
@@ -143,6 +146,7 @@ struct call_chain
 
 private:
     ////////////////////
+    // get unique call id
     static cid get_cid()
     {
         static std::atomic<cid> seed { 0 };
