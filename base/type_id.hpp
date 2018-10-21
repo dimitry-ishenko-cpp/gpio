@@ -17,6 +17,7 @@ namespace gpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
+// chip id
 inline std::string type_id(const gpio::chip* chip)
 {
     return chip->id().size()
@@ -25,6 +26,7 @@ inline std::string type_id(const gpio::chip* chip)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// pin id
 inline std::string type_id(const gpio::pin* pin)
 {
     return type_id(pin->chip()) + '#' + std::to_string(pin->pos());
