@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(gpio++-util VERSION 2.0)
+project(gpio++-base VERSION 2.0)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,4 +14,4 @@ set(SOURCES chip_base.cpp pin_base.cpp)
 
 ########################
 # object files
-add_library(gpio++-util OBJECT ${HEADERS} ${SOURCES})
+add_library(gpio++-base OBJECT ${HEADERS} ${SOURCES})

@@ -9,8 +9,8 @@ set(HEADERS
 set(FILES LICENSE.md README.md)
 
 # sub-project(s)
-add_subdirectory(util)
-set_property(TARGET gpio++-util PROPERTY POSITION_INDEPENDENT_CODE ON)
+add_subdirectory(base)
+set_property(TARGET gpio++-base PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 option(BUILD_CHIP "Build generic chip backend" ON)
 if(BUILD_CHIP)

@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_definitions(-DASIO_STANDALONE)
 
-include_directories(../include ../util)
+include_directories(../include ../base)
 
 set(HEADERS io_cmd.hpp chip.hpp pin.hpp)
 set(SOURCES chip.cpp pin.cpp)
@@ -15,7 +15,7 @@ set(SOURCES chip.cpp pin.cpp)
 ########################
 # dynamic library
 add_library(gpio++-chip SHARED
-    ${HEADERS} ${SOURCES} $<TARGET_OBJECTS:gpio++-util>
+    ${HEADERS} ${SOURCES} $<TARGET_OBJECTS:gpio++-base>
 )
 
 # install
