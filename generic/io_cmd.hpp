@@ -20,7 +20,6 @@ struct io_cmd
 {
     constexpr auto name() const noexcept { return n; }
     constexpr void* data() noexcept { return &data_; }
-    constexpr auto& get() noexcept { return data_; }
     T data_;
 };
 

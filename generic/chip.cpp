@@ -52,9 +52,9 @@ chip::chip(asio::io_service& io, std::string id) :
         type_id(this) + ": Error getting chip info - " + ec.message()
     );
 
-    name_ = cmd.get().label;
+    name_ = cmd.data_.label;
 
-    for(gpio::pos n = 0; n < cmd.get().lines; ++n)
+    for(gpio::pos n = 0; n < cmd.data_.lines; ++n)
         pins_.emplace_back(new generic::pin(io, this, n));
 }
 

@@ -119,7 +119,7 @@ gpio::state pin::state()
         type_id(this) + ": Cannot get pin state - " + ec.message()
     );
 
-    return cmd.get().values[0] ? on : off;
+    return cmd.data_.values[0] ? on : off;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -149,22 +149,22 @@ void pin::get_info()
     io_cmd<gpioline_info, GPIO_GET_LINEINFO_IOCTL> cmd = { };
     asio::error_code ec;
 
-    cmd.get().line_offset = static_cast<__u32>(pos_);
+    cmd.data_.line_offset = static_cast<__u32>(pos_);
 
     static_cast<generic::chip*>(chip_)->fd_.io_control(cmd, ec);
     if(ec) throw std::runtime_error(
         type_id(this) + ": Cannot get pin info - " + ec.message()
     );
 
-    name_ = cmd.get().name;
-    mode_ = cmd.get().flags & GPIOLINE_FLAG_IS_OUT ? out : in;
+    name_ = cmd.data_.name;
+    mode_ = cmd.data_.flags & GPIOLINE_FLAG_IS_OUT ? out : in;
 
     flags_ = { };
-    if(cmd.get().flags & GPIOLINE_FLAG_ACTIVE_LOW ) flags_ |= active_low;
-    if(cmd.get().flags & GPIOLINE_FLAG_OPEN_DRAIN ) flags_ |= open_drain;
-    if(cmd.get().flags & GPIOLINE_FLAG_OPEN_SOURCE) flags_ |= open_source;
+    if(cmd.data_.flags & GPIOLINE_FLAG_ACTIVE_LOW ) flags_ |= active_low;
+    if(cmd.data_.flags & GPIOLINE_FLAG_OPEN_DRAIN ) flags_ |= open_drain;
+    if(cmd.data_.flags & GPIOLINE_FLAG_OPEN_SOURCE) flags_ |= open_source;
 
-    used_ = cmd.get().flags & GPIOLINE_FLAG_KERNEL;
+    used_ = cmd.data_.flags & GPIOLINE_FLAG_KERNEL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -173,17 +173,17 @@ void pin::mode_in(uint32_t flags)
     io_cmd<gpioevent_request, GPIO_GET_LINEEVENT_IOCTL> cmd = { };
     asio::error_code ec;
 
-    cmd.get().lineoffset  = static_cast<__u32>(pos_);
-    cmd.get().handleflags = GPIOHANDLE_REQUEST_INPUT | flags;
-    cmd.get().eventflags  = GPIOEVENT_REQUEST_BOTH_EDGES;
-    std::strcpy(cmd.get().consumer_label, type_id(this).data());
+    cmd.data_.lineoffset  = static_cast<__u32>(pos_);
+    cmd.data_.handleflags = GPIOHANDLE_REQUEST_INPUT | flags;
+    cmd.data_.eventflags  = GPIOEVENT_REQUEST_BOTH_EDGES;
+    std::strcpy(cmd.data_.consumer_label, type_id(this).data());
 
     static_cast<generic::chip*>(chip_)->fd_.io_control(cmd, ec);
     if(ec) throw std::runtime_error(
         type_id(this) + ": Cannot set pin mode - " + ec.message()
     );
 
-    fd_.assign(cmd.get().fd);
+    fd_.assign(cmd.data_.fd);
     sched_read();
 }
 
@@ -193,18 +193,18 @@ void pin::mode_out(uint32_t flags, gpio::state state)
     io_cmd<gpiohandle_request, GPIO_GET_LINEHANDLE_IOCTL> cmd = { };
     asio::error_code ec;
 
-    cmd.get().lineoffsets[0]    = static_cast<__u32>(pos_);
-    cmd.get().flags             = GPIOHANDLE_REQUEST_OUTPUT | flags;
-    cmd.get().default_values[0] = state;
-    std::strcpy(cmd.get().consumer_label, type_id(this).data());
-    cmd.get().lines = 1;
+    cmd.data_.lineoffsets[0]    = static_cast<__u32>(pos_);
+    cmd.data_.flags             = GPIOHANDLE_REQUEST_OUTPUT | flags;
+    cmd.data_.default_values[0] = state;
+    std::strcpy(cmd.data_.consumer_label, type_id(this).data());
+    cmd.data_.lines = 1;
 
     static_cast<generic::chip*>(chip_)->fd_.io_control(cmd, ec);
     if(ec) throw std::runtime_error(
         type_id(this) + ": Cannot set pin mode - " + ec.message()
     );
 
-    fd_.assign(cmd.get().fd);
+    fd_.assign(cmd.data_.fd);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -213,7 +213,7 @@ void pin::state(gpio::state state)
     io_cmd<gpiohandle_data, GPIOHANDLE_SET_LINE_VALUES_IOCTL> cmd = { };
     asio::error_code ec;
 
-    cmd.get().values[0] = state;
+    cmd.data_.values[0] = state;
     fd_.io_control(cmd, ec);
     if(ec) throw std::runtime_error(
         type_id(this) + ": Cannot set pin state - " + ec.message()
