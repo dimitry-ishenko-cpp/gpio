@@ -69,9 +69,12 @@ chip::~chip()
 
 ////////////////////////////////////////////////////////////////////////////////
 }
+
+////////////////////////////////////////////////////////////////////////////////
+unique_chip get_chip(asio::io_service& io, std::string param)
+{
+    return std::make_unique<generic::chip>(io, std::move(param));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" gpio::chip* create_chip(asio::io_service& io, std::string id)
-{ return new gpio::generic::chip(io, std::move(id)); }
-extern "C" void delete_chip(gpio::chip* chip) { if(chip) delete chip; }
+}
