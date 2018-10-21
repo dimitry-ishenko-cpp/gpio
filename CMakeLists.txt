@@ -5,6 +5,7 @@ set(HEADERS
     include/gpio++/chip.hpp
     include/gpio++/pin.hpp
     include/gpio++/types.hpp
+    include/gpio++.hpp
 )
 set(FILES LICENSE.md README.md)
 
