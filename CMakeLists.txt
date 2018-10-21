@@ -1,21 +1,11 @@
 cmake_minimum_required(VERSION 3.1)
 project(gpio++ VERSION 2.0)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-add_definitions(-DASIO_STANDALONE)
-
-include_directories(include)
-
 set(HEADERS
     include/gpio++/chip.hpp
-    include/gpio++/gpio.hpp
     include/gpio++/pin.hpp
     include/gpio++/types.hpp
 )
-set(SOURCES lib/gpio.cpp)
 set(FILES LICENSE.md README.md)
 
 # sub-project(s)
@@ -28,11 +18,7 @@ if(BUILD_CHIP)
 endif(BUILD_CHIP)
 
 ########################
-# static library
-add_library(gpio++ STATIC ${HEADERS} ${SOURCES})
-
 # install
-install(TARGETS gpio++ DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
 install(FILES ${FILES} DESTINATION share/doc/${PROJECT_NAME})
 
