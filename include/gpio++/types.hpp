@@ -130,10 +130,11 @@ struct call_chain
     call_chain& operator=(call_chain&&) = default;
 
     ////////////////////
-    cid add(Fn fn)
+    template<typename T>
+    cid add(T&& fn)
     {
         cid id = get_cid();
-        chain_.emplace(id, std::move(fn));
+        chain_.emplace(id, std::forward<T>(fn));
         return id;
     }
     bool remove(cid id) { return chain_.erase(id); }
