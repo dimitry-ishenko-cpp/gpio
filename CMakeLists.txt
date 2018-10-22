@@ -13,7 +13,13 @@ set(FILES LICENSE.md README.md)
 add_subdirectory(base)
 set_property(TARGET gpio++-base PROPERTY POSITION_INDEPENDENT_CODE ON)
 
+# build generic backend
 add_subdirectory(generic)
+
+option(BUILD_PIGPIO "Build pigpio backend" ON)
+if(BUILD_PIGPIO)
+    add_subdirectory(pigpio)
+endif(BUILD_PIGPIO)
 
 ########################
 # install
