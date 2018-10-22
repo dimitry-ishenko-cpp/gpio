@@ -1,8 +1,8 @@
 # C++ GPIO Library for Linux
 
-The library is implemented as a "thin" layer provided by a static library called `libgpio++.a` and a number of backends provided by dynamic libraries, which can be loaded at runtime.
+The library is implemented as a collection of backends to control GPIO pins.
 
-The default backend provided by `libgpio++-chip.so` uses [new GPIO API](https://github.com/torvalds/linux/blob/v4.8/include/uapi/linux/gpio.h) introduced in Linux v4.8. This backend should work on any platform running kernel v4.8 or later. The backend has a few limitations, such as lack of pull-up/pull-down resistor control and no hardware PWM.
+The default backend provided by `libgpio++.so` uses [new GPIO API](https://github.com/torvalds/linux/blob/v4.8/include/uapi/linux/gpio.h) introduced in Linux v4.8. This backend should work on any platform running kernel v4.8 or later. The backend has a few limitations, such as lack of pull-up/pull-down resistor control and no hardware PWM.
 
 Chip-specific backends can provide additional functionality supported by the given chip.
 
@@ -53,38 +53,48 @@ $ sudo make install
 
 Example 1:
 ```cpp
-#include <gpio++/gpio.hpp>
+#include <gpio++.hpp>
 
 #include <asio.hpp>
+#include <iomanip>
 #include <iostream>
 
 int main(int argc, char* argv[])
 {
+    using std::cout;
+    using std::endl;
+    using std::setw;
+    using namespace gpio::literals;
+
     asio::io_service io;
 
-    auto chip = gpio::get_chip(io, "chip:0");
-    std::cout << "Chip info:" << std::endl;
-    std::cout << "  type: " << chip->type() << std::endl;
-    std::cout << "    id: " << chip->id() << std::endl;
-    std::cout << "  name: " << chip->name() << std::endl;
-    std::cout << "  pins: " << chip->pin_count() << std::endl;
-    std::cout << std::endl;
+    auto chip = gpio::get_chip(io, "0");
+    cout << "Chip info:" << endl;
+    cout << "  type: " << chip->type() << endl;
+    cout << "    id: " << chip->id() << endl;
+    cout << "  name: " << chip->name() << endl;
+    cout << "  pins: " << chip->pin_count() << endl;
 
+    cout << endl;
+    cout << " pin | name       | mode     " << endl;
+    cout << "-----+------------+----------" << endl;
     for(std::size_t n = 0; n < chip->pin_count(); ++n)
     {
         auto pin = chip->pin(n);
-        std::cout << "Pin #" << pin->pos() << " info:" << std::endl;
-        std::cout << "  name: " << pin->name() << std::endl;
-        std::cout << "  mode: " << pin->mode();
 
-        std::cout << " [";
-        if(pin->is_digital()) std::cout << " digital";
-        if(pin->is_analog() ) std::cout << " analog";
-        if(pin->is_input()  ) std::cout << " input";
-        if(pin->is_output() ) std::cout << " output";
-        std::cout << " ]" << std::endl;
+        auto name = pin->name();
+        if(name.empty()) name = "-";
+        name.resize(10, ' ');
 
-        std::cout << std::endl;
+        std::string mode;
+        switch(pin->mode())
+        {
+        case in:  mode = "in";  break;
+        case out: mode = "out"; break;
+        default:  mode = "-";   break;
+        }
+
+        cout << setw(4) << pin->pos() << " | " << name << " | " << mode << endl;
     }
 
     return 0;
@@ -93,29 +103,27 @@ int main(int argc, char* argv[])
 
 Compile and run:
 ```console
-$ g++ example1.cpp -o example1 -DASIO_STANDALONE -lgpio++ -ldl
+$ g++ example1.cpp -o example1 -DASIO_STANDALONE -lgpio++ -pthread
 $ ./example1
 ```
 
 Example 2:
 ```cpp
-#include <gpio++/gpio.hpp>
+#include <gpio++.hpp>
 
 #include <asio.hpp>
 #include <chrono>
 #include <iostream>
 #include <thread>
 
-using namespace std::chrono_literals;
-using namespace gpio::literals;
-
 int main()
 {
-    asio::io_service io;
-    auto chip = gpio::get_chip(io, "chip:0");
+    using namespace gpio::literals;
 
-    auto pin = chip->pin(2);
-    pin->mode(gpio::pwm);
+    asio::io_service io;
+    auto chip = gpio::get_chip(io, "0");
+
+    auto pin = chip->pin(2)->as(gpio::out);
     pin->period(10ms);
 
     std::cout << "Fading pin up and down" << std::endl;
@@ -141,13 +149,13 @@ int main()
 
 Compile and run:
 ```console
-$ g++ example2.cpp -o example2 -DASIO_STANDALONE -lgpio++ -ldl
+$ g++ example2.cpp -o example2 -DASIO_STANDALONE -lgpio++ -pthread
 $ ./example2
 ```
 
 Example 3 (callback):
 ```cpp
-#include <gpio++/gpio.hpp>
+#include <gpio++.hpp>
 
 #include <asio.hpp>
 #include <iostream>
@@ -155,10 +163,9 @@ Example 3 (callback):
 int main()
 {
     asio::io_service io;
-    auto chip = gpio::get_chip(io, "chip:0");
+    auto chip = gpio::get_chip(io, "0");
 
-    auto pin = chip->pin(2);
-    pin->mode(gpio::digital_in);
+    auto pin = chip->pin(2)->as(gpio::in);
 
     std::cout << "Monitoring pin:" << std::endl;
     pin->on_state_changed([](gpio::state s)
@@ -173,7 +180,7 @@ int main()
 
 Compile and run:
 ```console
-$ g++ example3.cpp -o example3 -DASIO_STANDALONE -lgpio++ -ldl
+$ g++ example3.cpp -o example3 -DASIO_STANDALONE -lgpio++ -pthread
 $ ./example3
 ```
 
