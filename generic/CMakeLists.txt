@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(gpio++-chip VERSION 2.0)
+project(gpio++ VERSION 2.0)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,11 +14,11 @@ set(SOURCES chip.cpp pin.cpp)
 
 ########################
 # dynamic library
-add_library(gpio++-chip SHARED
+add_library(gpio++ SHARED
     ${HEADERS} ${SOURCES} $<TARGET_OBJECTS:gpio++-base>
 )
 
 # install
-install(TARGETS gpio++-chip DESTINATION lib)
-set_target_properties(gpio++-chip PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(gpio++-chip PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+install(TARGETS gpio++ DESTINATION lib)
+set_target_properties(gpio++ PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(gpio++ PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})

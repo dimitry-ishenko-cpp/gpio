@@ -13,10 +13,7 @@ set(FILES LICENSE.md README.md)
 add_subdirectory(base)
 set_property(TARGET gpio++-base PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-option(BUILD_CHIP "Build generic chip backend" ON)
-if(BUILD_CHIP)
-    add_subdirectory(generic)
-endif(BUILD_CHIP)
+add_subdirectory(generic)
 
 ########################
 # install
