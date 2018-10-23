@@ -12,6 +12,8 @@
 #include <stdexcept>
 #include <utility>
 
+#include <pigpio.h>
+
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
 {
@@ -19,24 +21,30 @@ namespace pigpio
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-chip::chip(asio::io_service&, std::string id) : chip_base("pigpio")
+chip::chip(asio::io_service& io) : chip_base("pigpio")
 {
-    id_ = std::move(id);
+    if(gpioInitialise() < 0) throw std::runtime_error(
+        type_id(this) + ": Error initializing pigpio library"
+    );
+
+    for(gpio::pos n = 0; n < 32; ++n)
+        pins_.emplace_back(new pigpio::pin(io, this, n));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 chip::~chip()
 {
     pins_.clear();
+    gpioTerminate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-unique_chip get_chip(asio::io_service& io, std::string param)
+unique_chip get_chip(asio::io_service& io, std::string)
 {
-    return std::make_unique<pigpio::chip>(io, std::move(param));
+    return std::make_unique<pigpio::chip>(io);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

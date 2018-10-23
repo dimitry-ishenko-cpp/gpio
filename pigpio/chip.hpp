@@ -25,11 +25,8 @@ class chip : public chip_base
 {
 public:
     ////////////////////
-    chip(asio::io_service&, std::string id);
+    chip(asio::io_service&);
     virtual ~chip() override;
-
-private:
-    ////////////////////
 };
 
 ////////////////////////////////////////////////////////////////////////////////
