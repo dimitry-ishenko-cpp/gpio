@@ -13,7 +13,10 @@
 #include <stdexcept>
 #include <utility>
 
+#include <fcntl.h>
 #include <linux/gpio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace gpio
