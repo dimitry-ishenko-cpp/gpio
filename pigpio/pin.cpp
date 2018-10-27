@@ -11,7 +11,6 @@
 
 #include <algorithm>
 #include <asio.hpp>
-#include <limits>
 
 #include <fcntl.h>
 #include <pigpio.h>
@@ -30,6 +29,13 @@ pin::pin(asio::io_service& io, pigpio::chip* chip, gpio::pos n) :
 {
     valid_modes_ = { in, out };
     valid_flags_ = { pull_up, pull_down };
+
+    if(gpioSetPWMrange(to_gpio(), PI_MAX_DUTYCYCLE_RANGE) < 0)
+        throw std::runtime_error(
+            type_id(this) + ": Cannot set PWM range"
+        );
+
+    get_period();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,17 +93,10 @@ void pin::mode(gpio::mode mode, gpio::flag flag)
             type_id(this) + ": Cannot set pin mode - Invalid flag: " + std::to_string(flag)
         );
     }
-    flags_ = flag;
 
+    ////////////////////
+    pin_base::mode(mode, flag, off);
     if(mode == in) attach();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-gpio::mode pin::mode() const noexcept
-{
-    auto value = gpioGetMode(to_gpio());
-    return value == PI_INPUT ? in :
-           value == PI_OUTPUT ? out : detached;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -121,6 +120,7 @@ void pin::set(gpio::state state)
     if(gpioWrite(to_gpio(), state) < 0) throw std::runtime_error(
         type_id(this) + ": Cannot set pin state"
     );
+    pin_base::set(state);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -137,35 +137,30 @@ gpio::state pin::state()
 ////////////////////////////////////////////////////////////////////////////////
 void pin::period(nsec period)
 {
-    // prevent frequency overflow
-    period = std::max(period, 10000ns);
+    pin_base::period(period);
 
-    auto freq = nsec::period::den / (nsec::period::num * period.count());
+    auto freq = nsec::period::den / (nsec::period::num * period_.count());
     if(gpioSetPWMfrequency(to_gpio(), static_cast<unsigned>(freq)) < 0)
         throw std::runtime_error(
             type_id(this) + ": Cannot set PWM frequency"
         );
 
-    if(gpioSetPWMrange(to_gpio(), PI_MAX_DUTYCYCLE_RANGE) < 0)
-        throw std::runtime_error(
-            type_id(this) + ": Cannot set PWM range"
-        );
-
-    get_pwm();
+    get_period();
+    get_pulse();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void pin::pulse(nsec pulse)
 {
-    pulse = std::min(std::max(pulse, 0ns), period_);
+    pin_base::pulse(pulse);
 
-    auto cycle = pulse * PI_MAX_DUTYCYCLE_RANGE / period_;
+    auto cycle = pulse_ * PI_MAX_DUTYCYCLE_RANGE / period_;
     if(gpioPWM(to_gpio(), static_cast<unsigned>(cycle)) < 0)
         throw std::runtime_error(
             type_id(this) + ": Cannot set PWM duty cycle"
         );
 
-    pulse_ = period_ * cycle / PI_MAX_DUTYCYCLE_RANGE;
+    get_pulse();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -201,28 +196,34 @@ void pin::sched_read()
             if(ec) return;
 
             auto ev = reinterpret_cast<gpioReport_t*>(buffer_.data());
-            auto state = ev->level ? on : off;
+            state_changed_(ev->level & (1 << pos_) ? on : off);
 
-            state_changed_(state);
             sched_read();
         }
     );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void pin::get_pwm()
+void pin::get_period()
 {
     auto freq = gpioGetPWMfrequency(to_gpio());
     if(freq < 0) throw std::runtime_error(
         type_id(this) + ": Cannot get PWM frequency"
     );
     period_ = nsec(nsec::period::den / (nsec::period::num * freq));
+}
 
-    auto cycle = gpioGetPWMdutycycle(to_gpio());
-    if(cycle < 0) throw std::runtime_error(
-        type_id(this) + ": Cannot get PWM duty cycle"
-    );
-    pulse_ = period_ * cycle / PI_MAX_DUTYCYCLE_RANGE;
+////////////////////////////////////////////////////////////////////////////////
+void pin::get_pulse()
+{
+    if(pulse_ != 0ns)
+    {
+        auto cycle = gpioGetPWMdutycycle(to_gpio());
+        if(cycle < 0) throw std::runtime_error(
+            type_id(this) + ": Cannot get PWM duty cycle"
+        );
+        pulse_ = period_ * cycle / PI_MAX_DUTYCYCLE_RANGE;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

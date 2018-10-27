@@ -35,7 +35,6 @@ public:
     ////////////////////
     virtual void mode(gpio::mode, gpio::flag, gpio::state) override;
     virtual void mode(gpio::mode, gpio::flag) override;
-    virtual gpio::mode mode() const noexcept override;
 
     virtual void detach() override;
     virtual bool is_detached() const noexcept override { return !fd_.is_open(); }
@@ -61,7 +60,9 @@ private:
 
     ////////////////////
     auto to_gpio() const noexcept { return static_cast<unsigned>(pos_); }
-    void get_pwm();
+
+    void get_period();
+    void get_pulse();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
