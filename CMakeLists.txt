@@ -43,5 +43,6 @@ set(CPACK_GENERATOR DEB)
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "C++ GPIO Library for Linux")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Dimitry Ishenko <dimitry (dot) ishenko (at) (gee) mail (dot) com>")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libasio-dev (>= 1:1.10.10-1)")
+set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "pigpio")
 
 include(CPack)
