@@ -6,6 +6,10 @@ The default backend provided by `libgpio++.so` uses [new GPIO API](https://githu
 
 Chip-specific backends can provide additional functionality supported by the given chip.
 
+List of chip-specific backends:
+
+* `libgpio++-pigpio.so` provides Raspberry Pi specific backend based on the [pigpio library](http://abyz.me.uk/rpi/pigpio/index.html). This backend features more accurate PWM for each pin, as well as pull-up/down resistor support.
+
 ## Getting Started
 
 ### Prerequisites
@@ -14,6 +18,7 @@ Chip-specific backends can provide additional functionality supported by the giv
 * [asio C++ Library](https://think-async.com/) >= 1.10.10
 * Linux headers >= 4.8
 * CMake >= 3.1
+* Recommended: [pigpio library](http://abyz.me.uk/rpi/pigpio/index.html) (for Raspberry Pi)
 
 NB: asio 1.12.1 has a bug that may cause SIGSEGV due to null pointer deference, when using callbacks, eg. `gpio::pin::on_state_changed()`. It is recommended that you install an unofficial version 1.10.10 from [here](https://github.com/dimitry-ishenko-cpp/asio/releases/tag/asio-1-10-10).
 
@@ -106,6 +111,8 @@ Compile and run:
 $ g++ example1.cpp -o example1 -DASIO_STANDALONE -lgpio++ -pthread
 $ ./example1
 ```
+To compile with pigpio backend, replace `-lgpio++` above with `-lgpio++-pigpio -lpigpio`.
+
 
 Example 2:
 ```cpp
