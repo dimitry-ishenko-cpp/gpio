@@ -24,7 +24,7 @@ endif(BUILD_PIGPIO)
 ########################
 # install
 install(DIRECTORY include/ DESTINATION include)
-install(FILES ${FILES} DESTINATION share/doc/${PROJECT_NAME})
+install(FILES ${FILES} DESTINATION share/doc/${PROJECT_NAME}-${VERSION})
 
 ########################
 # package
