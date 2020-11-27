@@ -3,8 +3,6 @@ project(gpio++ VERSION 4.1)
 
 include(GNUInstallDirs)
 
-find_library(asio REQUIERED FATAL)
-
 set(HEADERS
     include/gpio++/chip.hpp
     include/gpio++/pin.hpp
