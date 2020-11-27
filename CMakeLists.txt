@@ -33,8 +33,6 @@ endif()
 # install
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES ${FILES} DESTINATION ${CMAKE_INSTALL_DOCDIR})
-#install(DIRECTORY include/ DESTINATION include)
-#install(FILES ${FILES} DESTINATION share/doc/${PROJECT_NAME}-${VERSION})
 
 ########################
 # package
