@@ -1,12 +1,17 @@
 cmake_minimum_required(VERSION 3.1)
 project(gpio++ VERSION 4.1)
 
+include(GNUInstallDirs)
+
+find_library(asio REQUIERED FATAL)
+
 set(HEADERS
     include/gpio++/chip.hpp
     include/gpio++/pin.hpp
     include/gpio++/types.hpp
     include/gpio++.hpp
 )
+
 set(FILES LICENSE.md README.md)
 
 # sub-project(s)
@@ -16,15 +21,20 @@ set_property(TARGET gpio++-base PROPERTY POSITION_INDEPENDENT_CODE ON)
 # build generic backend
 add_subdirectory(generic)
 
-option(BUILD_PIGPIO "Build pigpio backend" ON)
-if(BUILD_PIGPIO)
-    add_subdirectory(pigpio)
-endif(BUILD_PIGPIO)
+# pigpio should depend on arm architecture only
+if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm | aarch64")
+	option(BUILD_PIGPIO "Build pigpio backend" ON)
+	if(BUILD_PIGPIO)
+		add_subdirectory(pigpio)
+	endif()
+endif()
 
 ########################
 # install
-install(DIRECTORY include/ DESTINATION include)
-install(FILES ${FILES} DESTINATION share/doc/${PROJECT_NAME}-${VERSION})
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES ${FILES} DESTINATION ${CMAKE_INSTALL_DOCDIR})
+#install(DIRECTORY include/ DESTINATION include)
+#install(FILES ${FILES} DESTINATION share/doc/${PROJECT_NAME}-${VERSION})
 
 ########################
 # package
