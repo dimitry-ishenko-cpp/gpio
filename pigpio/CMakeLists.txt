@@ -19,6 +19,8 @@ add_library(gpio++-pigpio SHARED
 )
 
 # install
-install(TARGETS gpio++-pigpio DESTINATION lib)
+include(GNUInstallDirs)
+
+install(TARGETS gpio++-pigpio DESTINATION ${CMAKE_INSTALL_LIBDIR})
 set_target_properties(gpio++-pigpio PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(gpio++-pigpio PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})

@@ -23,8 +23,10 @@ endif(BUILD_PIGPIO)
 
 ########################
 # install
-install(DIRECTORY include/ DESTINATION include)
-install(FILES ${FILES} DESTINATION share/doc/${PROJECT_NAME})
+include(GNUInstallDirs)
+
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES ${FILES} DESTINATION ${CMAKE_INSTALL_DOCDIR})
 
 ########################
 # package

@@ -19,6 +19,8 @@ add_library(gpio++ SHARED
 )
 
 # install
-install(TARGETS gpio++ DESTINATION lib)
+include(GNUInstallDirs)
+
+install(TARGETS gpio++ DESTINATION ${CMAKE_INSTALL_LIBDIR})
 set_target_properties(gpio++ PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(gpio++ PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
