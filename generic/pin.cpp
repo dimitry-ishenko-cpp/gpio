@@ -16,6 +16,7 @@
 #include <initializer_list>
 #include <stdexcept>
 #include <string>
+#include <thread>
 
 #include <linux/gpio.h>
 
